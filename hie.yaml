@@ -1,0 +1,6 @@
+cradle:
+  cabal:
+    - path: "./src"
+      component: "lib:exh"
+    - path: "./test"
+      component: "test:exh-test"

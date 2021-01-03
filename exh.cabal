@@ -72,6 +72,7 @@ library
   exposed-modules:
     Web.Exhentai.Parsing.Gallery
     Web.Exhentai.Parsing.Image
+    Web.Exhentai.Parsing.Search
     Web.Exhentai.Types
 
   other-modules:   Web.Exhentai.Utils

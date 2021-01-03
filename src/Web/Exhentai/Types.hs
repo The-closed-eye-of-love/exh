@@ -40,3 +40,18 @@ parseAverageRating = parseMaybe averageRating
     averageRating = do
       _ <- chunk "Average: "
       AverageRating <$> float
+
+newtype GalleryLength = GalleryLength {unGalleryLength :: Int}
+  deriving newtype (Show, Eq)
+
+_GalleryLength :: Prism' Text GalleryLength
+_GalleryLength = prism' (pack . show . unGalleryLength) parseGalleryLength
+
+parseGalleryLength :: Text -> Maybe GalleryLength
+parseGalleryLength = parseMaybe galleryLength
+  where
+    galleryLength :: Parser GalleryLength
+    galleryLength = do
+      d <- decimal
+      _ <- chunk " pages"
+      pure $ GalleryLength d

@@ -42,6 +42,9 @@ tr = named "tr"
 td :: Traversal' Element Element
 td = named "td"
 
+img :: Traversal' Element Element
+img = named "img"
+
 cl :: Text -> Traversal' Element Element
 cl = attributeIs "class"
 

@@ -78,3 +78,6 @@ archiverLink = mainMetaR . deepen . cl "g2 gsp" . deepen . attr "onclick" . _Pop
 
 torrentLink :: Traversal' Element PopUpLink
 torrentLink = mainMetaR . deepen . cl "g2" . deepen . attr "onclick" . _PopUpLink
+
+imagePages :: Traversal' Element Text
+imagePages = div . id "gdt" . deepen . cl "gdtl" . deepen . a . attr "href"

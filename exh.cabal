@@ -71,6 +71,7 @@ library
   build-depends:
   exposed-modules:
     Web.Exhentai.Parsing.Gallery
+    Web.Exhentai.Parsing.Image
     Web.Exhentai.Types
 
   other-modules:   Web.Exhentai.Utils

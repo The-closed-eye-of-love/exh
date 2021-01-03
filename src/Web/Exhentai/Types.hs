@@ -11,6 +11,47 @@ import Text.Megaparsec.Char.Lexer
 
 type Parser = Parsec Void Text
 
+data GalleryCat
+  = Doujinshi
+  | Manga
+  | ArtistCG
+  | GameCG
+  | NonH
+  | ImageSet
+  | Western
+  | Cosplay
+  | Misc
+  | Private
+  deriving (Show, Eq, Enum)
+
+showCat :: GalleryCat -> Text
+showCat Doujinshi = "Doujinshi"
+showCat Manga = "Manga"
+showCat ArtistCG = "Artist CG"
+showCat GameCG = "Game CG"
+showCat NonH = "Non-H"
+showCat ImageSet = "Image Set"
+showCat Western = "Western"
+showCat Cosplay = "Cosplay"
+showCat Misc = "Misc"
+showCat Private = "Private"
+
+readCat :: Text -> Maybe GalleryCat
+readCat "Doujinshi" = Just Doujinshi
+readCat "Manga" = Just Manga
+readCat "Artist CG" = Just ArtistCG
+readCat "Game CG" = Just GameCG
+readCat "Non-H" = Just NonH
+readCat "Image Set" = Just ImageSet
+readCat "Western" = Just Western
+readCat "Cosplay" = Just Cosplay
+readCat "Misc" = Just Misc
+readCat "Private" = Just Private
+readCat _ = Nothing
+
+_GalleryCat :: Prism' Text GalleryCat
+_GalleryCat = prism' showCat readCat
+
 newtype PopUpLink = PopUpLink {unLink :: Text}
   deriving newtype (Show, Eq)
 

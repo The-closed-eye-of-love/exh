@@ -38,8 +38,8 @@ mainMetaM = mainMeta . deepen . div . id "gd4"
 mainMetaR :: Traversal' Element Element
 mainMetaR = mainMeta . deepen . div . id "gd5"
 
-category :: Traversal' Element Text
-category = mainMetaL . deepen . div . id "gdc" . deepen . div . lower . _Content
+category :: Traversal' Element GalleryCat
+category = mainMetaL . deepen . div . id "gdc" . deepen . div . lower . _Content . _GalleryCat
 
 uploader :: Traversal' Element Text
 uploader = mainMetaL . deepen . div . id "gdn" . deepen . a . lower . _Content

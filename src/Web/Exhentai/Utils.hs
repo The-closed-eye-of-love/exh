@@ -53,3 +53,11 @@ id = attributeIs "id"
 
 viaShowRead :: (Show a, Read a) => Prism' Text a
 viaShowRead = prism' (pack . show) (readMaybe . unpack)
+
+infixl 8 ^?:
+
+doc ^?: fld = doc ^? body . deepen . fld
+
+infixl 8 ^..:
+
+doc ^..: fld = doc ^.. body . deepen . fld

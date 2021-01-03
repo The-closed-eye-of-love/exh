@@ -4,7 +4,8 @@ module Web.Exhentai.Utils where
 
 import Control.Lens
 import Data.Maybe (isNothing)
-import Data.Text (Text)
+import Data.Text (Text, pack, unpack)
+import Text.Read
 import Text.XML
 import Text.XML.Lens
 
@@ -46,3 +47,6 @@ cl = attributeIs "class"
 
 id :: Text -> Traversal' Element Element
 id = attributeIs "id"
+
+viaShowRead :: (Show a, Read a) => Prism' Text a
+viaShowRead = prism' (pack . show) (readMaybe . unpack)

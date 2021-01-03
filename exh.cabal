@@ -1,40 +1,41 @@
-cabal-version: 3.0
-name:          exh
-version:       0.1.0
+cabal-version:   3.0
+name:            exh
+version:         0.1.0
 
 -- synopsis:
 -- description:
 -- category:
-license:       BSD-3-Clause
-license-file:  LICENSE
-author:        Poscat
-maintainer:    Poscat <poscat@mail.poscat.moe>
-copyright:     Copyright (c) Poscat 2021
-stability:     alpha
-homepage:      https://github.com/poscat0x04/exh
-bug-reports:   https://github.com/poscat0x04/exh/issues
+license:         BSD-3-Clause
+license-file:    LICENSE
+author:          Poscat
+maintainer:      Poscat <poscat@mail.poscat.moe>
+copyright:       Copyright (c) Poscat 2021
+stability:       alpha
+homepage:        https://github.com/poscat0x04/exh
+bug-reports:     https://github.com/poscat0x04/exh/issues
 extra-doc-files:
-  README.md
   CHANGELOG.md
+  README.md
 
 common common-attrs
   build-depends:
-    , base        >=4.10 && <5
+    , base             >=4.10 && <5
     , bytestring
     , conduit
     , conduit-extra
     , data-default
+    , html-conduit
     , http-client
     , http-client-tls
     , http-conduit
-    , html-conduit
     , lens
+    , megaparsec
     , text
-    , xml-lens
-    , xml-conduit
     , xml
+    , xml-conduit
+    , xml-lens
 
-  default-language:  Haskell2010
+  default-language:   Haskell2010
   default-extensions:
     NoStarIsType
     BangPatterns
@@ -44,6 +45,7 @@ common common-attrs
     DeriveFunctor
     DeriveGeneric
     DeriveTraversable
+    DuplicateRecordFields
     EmptyCase
     FlexibleContexts
     FlexibleInstances
@@ -56,7 +58,6 @@ common common-attrs
     PartialTypeSignatures
     PatternSynonyms
     RecordWildCards
-    DuplicateRecordFields
     ScopedTypeVariables
     TupleSections
     TypeApplications
@@ -68,21 +69,19 @@ common common-attrs
 library
   import:          common-attrs
   build-depends:
-
   exposed-modules:
+    Web.Exhentai.Parsing.Gallery
+    Web.Exhentai.Types
 
-  other-modules:
-    Web.Exhentai.Utils
+  other-modules:   Web.Exhentai.Utils
   hs-source-dirs:  src
 
 test-suite exh-test
-  import:          common-attrs
-  type:            exitcode-stdio-1.0
-  build-depends:
-    , exh
-
-  hs-source-dirs:  test
-  main-is:         Spec.hs
+  import:         common-attrs
+  type:           exitcode-stdio-1.0
+  build-depends:  exh
+  hs-source-dirs: test
+  main-is:        Spec.hs
 
 source-repository head
   type:     git

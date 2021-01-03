@@ -18,11 +18,8 @@ withoutAttribute = flip attributeSatisfies' isNothing
 lower :: Traversal' Element Node
 lower = nodes . traverse
 
-deepen :: Traversal' Element Element
-deepen = lower . _Element
-
 body :: Traversal' Document Element
-body = root . named "html" . deepen . named "body"
+body = root . named "html" ... named "body"
 
 div :: Traversal' Element Element
 div = named "div"
@@ -56,8 +53,8 @@ viaShowRead = prism' (pack . show) (readMaybe . unpack)
 
 infixl 8 ^?:
 
-doc ^?: fld = doc ^? body . deepen . fld
+doc ^?: fld = doc ^? body ... fld
 
 infixl 8 ^..:
 
-doc ^..: fld = doc ^.. body . deepen . fld
+doc ^..: fld = doc ^.. body ... fld

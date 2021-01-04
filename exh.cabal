@@ -19,17 +19,26 @@ extra-doc-files:
 
 common common-attrs
   build-depends:
+    , aeson
     , base             >=4.10 && <5
     , bytestring
     , conduit
     , conduit-extra
     , data-default
+    , exceptions
     , html-conduit
     , http-client
     , http-client-tls
     , http-conduit
     , lens
     , megaparsec
+    , transformers
+    , transformers-base
+    , monad-control
+    , mtl
+    , monad-time
+    , quickjs-hs
+    , retry
     , text
     , xml
     , xml-conduit
@@ -70,10 +79,12 @@ library
   import:          common-attrs
   build-depends:
   exposed-modules:
+    Web.Exhentai.API.Auth
     Web.Exhentai.Parsing.Gallery
     Web.Exhentai.Parsing.Image
     Web.Exhentai.Parsing.Search
     Web.Exhentai.Types
+    Web.Exhentai.Types.CookieT
     Web.Exhentai.Utils
 
   other-modules:
@@ -83,8 +94,9 @@ test-suite exh-test
   import:         common-attrs
   type:           exitcode-stdio-1.0
   build-depends:
-   , exh
-   , hspec
+    , exh
+    , hspec
+
   hs-source-dirs: test
   main-is:        Spec.hs
 

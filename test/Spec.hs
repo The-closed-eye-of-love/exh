@@ -3,19 +3,24 @@ module Main where
 import Data.Maybe
 import Test.Hspec
 import Text.HTML.DOM
+import Web.Exhentai.API.Auth
 import qualified Web.Exhentai.Parsing.Gallery as G
 import Web.Exhentai.Parsing.Image
 import qualified Web.Exhentai.Parsing.Search as S
+import Web.Exhentai.Types.CookieT
 import Web.Exhentai.Utils
 import Prelude hiding (readFile)
 
 main :: IO ()
 main = do
+  sanityCheck
+
+sanityCheck :: IO ()
+sanityCheck = do
   image <- readFile "test/Image.html"
   galleryMpv <- readFile "test/Gallery-MPV.html"
   galleryNonMpv <- readFile "test/Gallery-NonMPV.html"
-  search <- readFile "test/Search-Compat.html"
-  searchLong <- readFile "test/Search-Long.html"
+  search <- readFile "test/Search-Extended.html"
   hspec $ do
     describe "Image.imageSrc" $ do
       it "should return the image source link" $ do
@@ -58,4 +63,7 @@ main = do
     describe "Search.pages" $ do
       it "should return available page range" $ do
         (search ^?: S.pages) `shouldSatisfy` isJust
-        (searchLong ^?: S.pages) `shouldSatisfy` isJust
+
+    describe "Search.galleryPreviewElement" $ do
+      it "should return gallery preview elements" $ do
+        (search ^?: S.galleryPreviewElement) `shouldSatisfy` isJust

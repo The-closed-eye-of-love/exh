@@ -1,5 +1,6 @@
 {-# LANGUAGE DerivingStrategies #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE UndecidableInstances #-}
 
 module Web.Exhentai.Types.CookieT where
@@ -12,6 +13,7 @@ import Control.Monad.Except
 import Control.Monad.Reader
 import Control.Monad.Time
 import Control.Monad.Trans.Control
+import Control.Retry
 import Data.ByteString (ByteString)
 import Data.Function ((&))
 import Network.HTTP.Client
@@ -19,13 +21,16 @@ import Network.HTTP.Client.MultipartFormData
 import Network.HTTP.Client.TLS
 import Network.HTTP.Conduit
 
+data Policy = Policy RetryPolicy
+
 class (Monad m, MonadCatch m, MonadThrow m) => MonadHttp m where
+  getRetryPolicy :: m Policy
   formRequest :: String -> m Request
   attachFormData :: [Part] -> Request -> m Request
   sendRequest :: Request -> m (Response (ConduitT () ByteString (ResourceT m) ()))
   sendRequestNoBody :: Request -> m (Response ())
 
-class (MonadMask m, MonadTime m, MonadHttp m) => MonadHttpState m where
+class (MonadMask m, MonadTime m, MonadHttp m, MonadUnliftIO m) => MonadHttpState m where
   takeCookieJar :: m CookieJar
   readCookieJar :: m CookieJar
   putCookieJar :: CookieJar -> m ()
@@ -37,7 +42,7 @@ withJar k req =
     putCookieJar
     $ \jar -> do
       let req' = req {cookieJar = Just jar}
-      resp <- k req'
+      resp <- retryWhenTimeout $ k req'
       putCookieJar $ responseCookieJar resp
       pure resp
 
@@ -51,9 +56,9 @@ sendRequestWithJar' :: MonadHttpState m => Request -> m (Response (ConduitT () B
 sendRequestWithJar' req = do
   jar <- readCookieJar
   let req' = req {cookieJar = Just jar}
-  sendRequest req'
+  retryWhenTimeout $ sendRequest req'
 
-newtype CookieT m a = CookieT {unCookieT :: ReaderT (MVar CookieJar) (ReaderT Manager m) a}
+newtype CookieT m a = CookieT {unCookieT :: ReaderT (MVar CookieJar) (ReaderT Manager (ReaderT Policy m)) a}
   deriving newtype
     ( Functor,
       Applicative,
@@ -70,17 +75,18 @@ newtype CookieT m a = CookieT {unCookieT :: ReaderT (MVar CookieJar) (ReaderT Ma
       MonadTime
     )
 
-runCookieT :: MonadIO m => CookieT m a -> m a
-runCookieT m = do
+runCookieT :: MonadIO m => RetryPolicy -> CookieT m a -> m a
+runCookieT policy m = do
   manager <- liftIO newTlsManager
   ref <- liftIO $ newMVar mempty
   m
     & unCookieT
     & flip runReaderT ref
     & flip runReaderT manager
+    & flip runReaderT (Policy policy)
 
 instance MonadTrans CookieT where
-  lift = CookieT . lift . lift
+  lift = CookieT . lift . lift . lift
 
 instance
   ( MonadIO m,
@@ -90,6 +96,7 @@ instance
   ) =>
   MonadHttp (CookieT m)
   where
+  getRetryPolicy = CookieT $ lift $ lift ask
   formRequest = parseRequest
   attachFormData = formDataBody
   sendRequest req = do
@@ -98,6 +105,20 @@ instance
   sendRequestNoBody req = do
     manager <- CookieT $ lift ask
     liftIO $ httpNoBody req manager
+
+retryWhenTimeout :: MonadHttpState m => m a -> m a
+retryWhenTimeout action = do
+  Policy policy <- getRetryPolicy
+  recovering policy handlers (const action)
+  where
+    handlers =
+      skipAsyncExceptions
+        ++ [ const (Handler (pure . judge))
+           ]
+    judge (HttpExceptionRequest _ c)
+      | ResponseTimeout <- c = True
+      | ConnectionTimeout <- c = True
+    judge _ = False
 
 instance
   ( MonadMask m,

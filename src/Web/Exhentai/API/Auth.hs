@@ -1,7 +1,7 @@
 module Web.Exhentai.API.Auth where
 
-import Data.ByteString
-import Network.HTTP.Client
+import Data.ByteString (ByteString)
+import Network.HTTP.Client.Conduit
 import Network.HTTP.Client.MultipartFormData
 import Web.Exhentai.Types.CookieT
 
@@ -13,7 +13,7 @@ data Credential = Credential
 
 auth :: MonadHttpState m => Credential -> m ()
 auth Credential {..} = do
-  let initReq = parseRequest_ "POST https://forums.e-hentai.org/index.php"
+  initReq <- formRequest "POST https://forums.e-hentai.org/index.php"
   let parts =
         [ partBS "CookieDate" "1",
           partBS "b" "d",
@@ -29,8 +29,11 @@ auth Credential {..} = do
           ]
           initReq
   finalReq <- attachFormData parts req
-  _ <- sendRequestNoBodyWithJar finalReq
-  _ <- sendRequestNoBodyWithJar $ parseRequest_ "https://exhentai.org"
-  _ <- sendRequestNoBodyWithJar $ parseRequest_ "https://exhentai.org/uconfig.php"
-  _ <- sendRequestNoBodyWithJar $ parseRequest_ "https://exhentai.org/mytags"
+  modifyingJar finalReq
+  req2 <- formRequest "https://exhentai.org"
+  modifyingJar req2
+  req3 <- formRequest "https://exhentai.org/uconfig.php"
+  modifyingJar req3
+  req4 <- formRequest "https://exhentai.org/mytags"
+  modifyingJar req4
   pure ()

@@ -16,53 +16,58 @@ import Control.Monad.Trans.Control
 import Control.Retry
 import Data.ByteString (ByteString)
 import Data.Function ((&))
-import Network.HTTP.Client
+import GHC.Generics
+import Network.HTTP.Client.Conduit
 import Network.HTTP.Client.MultipartFormData
 import Network.HTTP.Client.TLS
-import Network.HTTP.Conduit
 
-data Policy = Policy RetryPolicy
+newtype Policy = Policy RetryPolicy
 
 class (Monad m, MonadCatch m, MonadThrow m) => MonadHttp m where
   getRetryPolicy :: m Policy
   formRequest :: String -> m Request
   attachFormData :: [Part] -> Request -> m Request
-  sendRequest :: Request -> m (Response (ConduitT () ByteString (ResourceT m) ()))
-  sendRequestNoBody :: Request -> m (Response ())
+  withResp :: MonadIO n => Request -> (Response (ConduitT i ByteString n ()) -> m a) -> m a
+  reqNoBody :: Request -> m (Response ())
 
 class (MonadMask m, MonadTime m, MonadHttp m, MonadUnliftIO m) => MonadHttpState m where
   takeCookieJar :: m CookieJar
   readCookieJar :: m CookieJar
   putCookieJar :: CookieJar -> m ()
 
-withJar :: MonadHttpState m => (Request -> m (Response b)) -> Request -> m (Response b)
-withJar k req =
+modifyingJar :: MonadHttpState m => Request -> m ()
+modifyingJar req =
   bracketOnError
     takeCookieJar
     putCookieJar
     $ \jar -> do
       let req' = req {cookieJar = Just jar}
-      resp <- retryWhenTimeout $ k req'
+      resp <- retryWhenTimeout $ reqNoBody req'
       putCookieJar $ responseCookieJar resp
-      pure resp
+      pure ()
 
-sendRequestWithJar :: MonadHttpState m => Request -> m (Response (ConduitT () ByteString (ResourceT m) ()))
-sendRequestWithJar = withJar sendRequest
-
-sendRequestNoBodyWithJar :: MonadHttpState m => Request -> m (Response ())
-sendRequestNoBodyWithJar = withJar sendRequestNoBody
-
-sendRequestWithJar' :: MonadHttpState m => Request -> m (Response (ConduitT () ByteString (ResourceT m) ()))
-sendRequestWithJar' req = do
+withJar :: (MonadHttpState m, MonadIO n) => Request -> (ConduitT i ByteString n () -> m a) -> m a
+withJar req k = do
   jar <- readCookieJar
   let req' = req {cookieJar = Just jar}
-  retryWhenTimeout $ sendRequest req'
+  withResp req' $ \r -> k (responseBody r)
 
-newtype CookieT m a = CookieT {unCookieT :: ReaderT (MVar CookieJar) (ReaderT Manager (ReaderT Policy m)) a}
+data CookieEnv = CookieEnv
+  { policy :: Policy,
+    jarRef :: MVar CookieJar,
+    manager :: Manager
+  }
+  deriving (Generic)
+
+instance HasHttpManager CookieEnv where
+  getHttpManager = manager
+
+newtype CookieT m a = CookieT {unCookieT :: ReaderT CookieEnv m a}
   deriving newtype
     ( Functor,
       Applicative,
       Monad,
+      MonadReader CookieEnv,
       MonadThrow,
       MonadCatch,
       MonadMask,
@@ -76,17 +81,15 @@ newtype CookieT m a = CookieT {unCookieT :: ReaderT (MVar CookieJar) (ReaderT Ma
     )
 
 runCookieT :: MonadIO m => RetryPolicy -> CookieT m a -> m a
-runCookieT policy m = do
+runCookieT (Policy -> policy) m = do
   manager <- liftIO newTlsManager
-  ref <- liftIO $ newMVar mempty
+  jarRef <- liftIO $ newMVar mempty
   m
     & unCookieT
-    & flip runReaderT ref
-    & flip runReaderT manager
-    & flip runReaderT (Policy policy)
+    & flip runReaderT CookieEnv {..}
 
 instance MonadTrans CookieT where
-  lift = CookieT . lift . lift . lift
+  lift = CookieT . lift
 
 instance
   ( MonadIO m,
@@ -96,15 +99,11 @@ instance
   ) =>
   MonadHttp (CookieT m)
   where
-  getRetryPolicy = CookieT $ lift $ lift ask
+  getRetryPolicy = asks policy
   formRequest = parseRequest
   attachFormData = formDataBody
-  sendRequest req = do
-    manager <- CookieT $ lift ask
-    runResourceT $ http req manager
-  sendRequestNoBody req = do
-    manager <- CookieT $ lift ask
-    liftIO $ httpNoBody req manager
+  withResp = withResponse
+  reqNoBody = httpNoBody
 
 retryWhenTimeout :: MonadHttpState m => m a -> m a
 retryWhenTimeout action = do
@@ -128,11 +127,11 @@ instance
   MonadHttpState (CookieT m)
   where
   takeCookieJar = do
-    ref <- CookieT ask
+    ref <- asks jarRef
     liftIO $ takeMVar ref
   putCookieJar jar = do
-    ref <- CookieT ask
+    ref <- asks jarRef
     liftIO $ putMVar ref jar
   readCookieJar = do
-    ref <- CookieT ask
+    ref <- asks jarRef
     liftIO $ readMVar ref

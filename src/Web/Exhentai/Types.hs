@@ -7,6 +7,14 @@ import Control.Lens
 import Data.Text (Text, pack)
 import Data.Void
 import Text.Megaparsec
+  ( MonadParsec (takeWhile1P),
+    Parsec,
+    chunk,
+    optional,
+    parseMaybe,
+    single,
+    takeRest,
+  )
 import Text.Megaparsec.Char.Lexer
 
 type Parser = Parsec Void Text
@@ -96,3 +104,27 @@ parseGalleryLength = parseMaybe galleryLength
       d <- decimal
       _ <- chunk " pages"
       pure $ GalleryLength d
+
+data Gallery = Gallery
+  { galleryId :: Int,
+    token :: Text
+  }
+  deriving (Show, Eq)
+
+toGalleryLink :: Gallery -> Text
+toGalleryLink Gallery {..} = "https://exhentai.org/g/" <> pack (show galleryId) <> "/" <> token <> "/"
+
+toMpvLink :: Gallery -> Text
+toMpvLink Gallery {..} = "https://exhentai.org/mpv/" <> pack (show galleryId) <> "/" <> token <> "/"
+
+parseGalleryLink :: Text -> Maybe Gallery
+parseGalleryLink = parseMaybe galleryLink
+  where
+    galleryLink :: Parser Gallery
+    galleryLink = do
+      _ <- chunk "https://exhentai.org/g/"
+      galleryId <- decimal
+      _ <- single '/'
+      token <- takeWhile1P Nothing (/= '/')
+      _ <- optional $ single '/'
+      pure Gallery {..}

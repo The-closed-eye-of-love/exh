@@ -20,8 +20,10 @@ extra-doc-files:
 common common-attrs
   build-depends:
     , aeson
-    , base             >=4.10 && <5
+    , base               >=4.10 && <5
     , bytestring
+    , containers
+    , tar-conduit
     , conduit
     , conduit-extra
     , data-default
@@ -32,14 +34,14 @@ common common-attrs
     , http-conduit
     , lens
     , megaparsec
-    , transformers
-    , transformers-base
     , monad-control
-    , mtl
     , monad-time
+    , mtl
     , quickjs-hs
     , retry
     , text
+    , transformers
+    , transformers-base
     , xml
     , xml-conduit
     , xml-lens
@@ -80,8 +82,11 @@ library
   build-depends:
   exposed-modules:
     Web.Exhentai.API.Auth
+    Web.Exhentai.API.MPV
+    Web.Exhentai.Errors
     Web.Exhentai.Parsing.Gallery
     Web.Exhentai.Parsing.Image
+    Web.Exhentai.Parsing.MPV
     Web.Exhentai.Parsing.Search
     Web.Exhentai.Types
     Web.Exhentai.Types.CookieT

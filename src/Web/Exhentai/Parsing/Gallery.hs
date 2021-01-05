@@ -11,9 +11,6 @@ import Web.Exhentai.Types
 import Web.Exhentai.Utils
 import Prelude hiding (div, id, readFile)
 
-scripts :: Traversal' Element Element
-scripts = named "script" . attributeIs "type" "text/javascript"
-
 meta :: Traversal' Element Element
 meta = div . cl "gm"
 

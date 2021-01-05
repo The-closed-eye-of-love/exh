@@ -27,7 +27,8 @@ class (Monad m, MonadCatch m, MonadThrow m) => MonadHttp m where
   getRetryPolicy :: m Policy
   formRequest :: String -> m Request
   attachFormData :: [Part] -> Request -> m Request
-  withResp :: MonadIO n => Request -> (Response (ConduitT i ByteString n ()) -> m a) -> m a
+  respOpen :: MonadIO n => Request -> m (Response (ConduitT i ByteString n ()))
+  respClose :: Response body -> m ()
   reqNoBody :: Request -> m (Response ())
 
 class (MonadMask m, MonadTime m, MonadHttp m, MonadUnliftIO m) => MonadHttpState m where
@@ -46,11 +47,20 @@ modifyingJar req =
       putCookieJar $ responseCookieJar resp
       pure ()
 
+openWithJar :: (MonadHttpState m, MonadIO n) => Request -> m (Response (ConduitT i ByteString n ()))
+openWithJar req = do
+  jar <- readCookieJar
+  let req' = req {cookieJar = Just jar}
+  respOpen req'
+
 withJar :: (MonadHttpState m, MonadIO n) => Request -> (ConduitT i ByteString n () -> m a) -> m a
 withJar req k = do
   jar <- readCookieJar
   let req' = req {cookieJar = Just jar}
-  withResp req' $ \r -> k (responseBody r)
+  bracket
+    (respOpen req')
+    respClose
+    (k . responseBody)
 
 data CookieEnv = CookieEnv
   { policy :: Policy,
@@ -102,7 +112,8 @@ instance
   getRetryPolicy = asks policy
   formRequest = parseRequest
   attachFormData = formDataBody
-  withResp = withResponse
+  respOpen = responseOpen
+  respClose = responseClose
   reqNoBody = httpNoBody
 
 retryWhenTimeout :: MonadHttpState m => m a -> m a

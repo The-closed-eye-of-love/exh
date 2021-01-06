@@ -5,6 +5,7 @@ module Web.Exhentai.Types where
 
 import Control.Lens
 import Data.Text (Text, pack)
+import Data.Time
 import Data.Void
 import Text.Megaparsec
   ( MonadParsec (takeWhile1P),
@@ -105,11 +106,26 @@ parseGalleryLength = parseMaybe galleryLength
       _ <- chunk " pages"
       pure $ GalleryLength d
 
+newtype FavoriteCount = FavoriteCount {unFavoriteCount :: Int}
+  deriving newtype (Show, Eq)
+
+parseFavoriteCount :: Text -> Maybe FavoriteCount
+parseFavoriteCount = parseMaybe favoriteCount
+  where
+    favoriteCount :: Parser FavoriteCount
+    favoriteCount = do
+      d <- decimal
+      _ <- chunk " times"
+      pure $ FavoriteCount d
+
 data Gallery = Gallery
-  { galleryId :: Int,
-    token :: Text
+  { galleryId :: {-# UNPACK #-} !Int,
+    token :: {-# UNPACK #-} !Text
   }
   deriving (Show, Eq)
+
+_GalleryLink :: Prism' Text Gallery
+_GalleryLink = prism' toGalleryLink parseGalleryLink
 
 toGalleryLink :: Gallery -> Text
 toGalleryLink Gallery {..} = "https://exhentai.org/g/" <> pack (show galleryId) <> "/" <> token <> "/"

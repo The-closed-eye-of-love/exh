@@ -8,6 +8,8 @@ import Data.Aeson
 import Data.ByteString (ByteString)
 import Data.Maybe (isNothing)
 import Data.Text (Text, pack, unpack)
+import Data.Time
+import Data.Time.Format
 import Network.HTTP.Client.Conduit
 import Text.HTML.DOM
 import Text.Read
@@ -81,3 +83,6 @@ htmlRequest' :: MonadHttpState m => Text -> m Document
 htmlRequest' url = do
   req <- formRequest $ unpack url
   htmlRequest req
+
+parseUploadTime :: Text -> Maybe UTCTime
+parseUploadTime s = parseTimeM True defaultTimeLocale "%F %R" $ unpack s

@@ -15,9 +15,9 @@ allScripts :: Traversal' Document Text
 allScripts = body ... scripts . lower . _Content
 
 data MpvImage = MpvImage
-  { name :: Text,
-    key :: Text,
-    thumbnail :: Text
+  { name :: {-# UNPACK #-} Text,
+    key :: {-# UNPACK #-} Text,
+    thumbnail :: {-# UNPACK #-} Text
   }
   deriving (Show, Eq, Generic)
 
@@ -29,10 +29,10 @@ instance FromJSON MpvImage where
       <*> o .: "t"
 
 data Vars = Vars
-  { gid :: Int,
-    mpvkey :: Text,
-    apiUrl :: Text,
-    pageCount :: Int,
+  { gid :: {-# UNPACK #-} Int,
+    mpvkey :: {-# UNPACK #-} Text,
+    apiUrl :: {-# UNPACK #-} Text,
+    pageCount :: {-# UNPACK #-} Int,
     imageList :: [MpvImage]
   }
   deriving (Show, Eq, Generic)

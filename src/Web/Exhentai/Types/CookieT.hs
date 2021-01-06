@@ -65,7 +65,7 @@ withJar req k = do
 data CookieEnv = CookieEnv
   { policy :: Policy,
     jarRef :: MVar CookieJar,
-    manager :: Manager
+    manager :: {-# UNPACK #-} !Manager
   }
   deriving (Generic)
 

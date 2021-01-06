@@ -5,10 +5,11 @@
 module Web.Exhentai.Errors where
 
 import Control.Exception
+import Data.Text (Text)
 
 data ExhentaiError
   = JSONParseFailure String
-  | XMLParseFailure
+  | XMLParseFailure Text
   | ExtractionFailure String
   deriving (Show, Eq)
   deriving (Exception)

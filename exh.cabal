@@ -25,6 +25,7 @@ common common-attrs
     , containers
     , tar-conduit
     , conduit
+    , time
     , conduit-extra
     , data-default
     , exceptions
@@ -34,6 +35,7 @@ common common-attrs
     , http-conduit
     , lens
     , megaparsec
+    , pretty-simple
     , monad-control
     , monad-time
     , mtl
@@ -88,6 +90,7 @@ library
     Web.Exhentai.Parsing.Image
     Web.Exhentai.Parsing.MPV
     Web.Exhentai.Parsing.Search
+    Web.Exhentai.API.Gallery
     Web.Exhentai.Types
     Web.Exhentai.Types.CookieT
     Web.Exhentai.Utils

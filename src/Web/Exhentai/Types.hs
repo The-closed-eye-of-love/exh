@@ -4,6 +4,7 @@
 module Web.Exhentai.Types where
 
 import Control.Lens
+import Data.Set (Set, fromList, toList)
 import Data.Text (Text, pack)
 import Data.Void
 import Text.Megaparsec
@@ -20,17 +21,24 @@ import Text.Megaparsec.Char.Lexer
 type Parser = Parsec Void Text
 
 data GalleryCat
-  = Doujinshi
+  = Misc
+  | Doujinshi
   | Manga
   | ArtistCG
   | GameCG
-  | NonH
   | ImageSet
-  | Western
   | Cosplay
-  | Misc
+  | AsianPorn
+  | NonH
+  | Western
   | Private
-  deriving (Show, Eq, Enum)
+  deriving (Show, Eq, Ord, Enum, Bounded)
+
+allGalleryCats :: Set GalleryCat
+allGalleryCats = fromList [Misc .. Private]
+
+toBitField :: Set GalleryCat -> Int
+toBitField = sum . map ((2 ^) . fromEnum) . toList
 
 showCat :: GalleryCat -> Text
 showCat Doujinshi = "Doujinshi"
@@ -43,6 +51,7 @@ showCat Western = "Western"
 showCat Cosplay = "Cosplay"
 showCat Misc = "Misc"
 showCat Private = "Private"
+showCat AsianPorn = "Asian Porn"
 
 readCat :: Text -> Maybe GalleryCat
 readCat "Doujinshi" = Just Doujinshi
@@ -55,6 +64,7 @@ readCat "Western" = Just Western
 readCat "Cosplay" = Just Cosplay
 readCat "Misc" = Just Misc
 readCat "Private" = Just Private
+readCat "Asian Porn" = Just AsianPorn
 readCat _ = Nothing
 
 _GalleryCat :: Prism' Text GalleryCat

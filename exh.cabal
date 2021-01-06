@@ -85,6 +85,7 @@ library
   exposed-modules:
     Web.Exhentai.API.Auth
     Web.Exhentai.API.MPV
+    Web.Exhentai.API.Search
     Web.Exhentai.Errors
     Web.Exhentai.Parsing.Gallery
     Web.Exhentai.Parsing.Image

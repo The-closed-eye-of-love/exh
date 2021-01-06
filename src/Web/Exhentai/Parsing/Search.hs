@@ -8,7 +8,13 @@ import Web.Exhentai.Utils
 import Prelude hiding (div)
 
 pages :: Traversal' Element Int
-pages = cl "ido" ... div ... cl "ptt" ... tr ... td ... a . lower . _Content . viaShowRead
+pages = pagesElem ... a . lower . _Content . viaShowRead
+
+pagesElem :: Traversal' Element Element
+pagesElem = cl "ido" ... div ... cl "ptt" ... tr ... td
+
+linkOf :: Traversal' Element Text
+linkOf = lower . _Element . attr "href"
 
 galleryPreviewElement :: Traversal' Element Element
 galleryPreviewElement = cl "ido" ... div ... cl "itg glte" ... tr

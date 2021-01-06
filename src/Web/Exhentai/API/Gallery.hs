@@ -1,6 +1,12 @@
 {-# LANGUAGE StrictData #-}
 
-module Web.Exhentai.API.Gallery where
+module Web.Exhentai.API.Gallery
+  ( GalleryInfo (..),
+    Visibility (..),
+    fetchGalleryInfo,
+    parseGallery,
+  )
+where
 
 import Control.Lens ((^..), (^?))
 import Control.Monad

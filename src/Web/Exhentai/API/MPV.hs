@@ -2,7 +2,18 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE NamedFieldPuns #-}
 
-module Web.Exhentai.API.MPV where
+module Web.Exhentai.API.MPV
+  ( DispatchRequest (..),
+    DispatchResult (..),
+    Vars (..),
+    Server (..),
+    Dim (..),
+    fetchMpv,
+    toRequests,
+    imageDispatch,
+    fetchImage,
+  )
+where
 
 import Conduit
 import Control.Applicative
@@ -106,8 +117,8 @@ toRequests Vars {..} = zipWith formReq [1 ..] imageList
           mpvKey = mpvkey
         }
 
-processMpv :: (MonadHttpState m, MonadIO m) => Gallery -> m Vars
-processMpv g = htmlRequest' (toMpvLink g) >>= parseMpv
+fetchMpv :: (MonadHttpState m, MonadIO m) => Gallery -> m Vars
+fetchMpv g = htmlRequest' (toMpvLink g) >>= parseMpv
 
 parseMpv :: (MonadIO m, MonadThrow m) => Document -> m Vars
 parseMpv doc = do
@@ -125,12 +136,6 @@ imageDispatch dreq = do
   case r of
     Left e -> throwM $ JSONParseFailure e
     Right res -> pure res
-
-fetchImageSimple :: (MonadHttpState m, MonadIO n) => DispatchRequest -> m (Response (ConduitT i ByteString n ()))
-fetchImageSimple dreq = do
-  DispatchResult {..} <- imageDispatch dreq
-  req <- formRequest $ unpack imgLink
-  openWithJar req
 
 fetchImage :: (MonadHttpState m, MonadIO n) => DispatchRequest -> m (Response (ConduitT i ByteString n ()))
 fetchImage dreq = do

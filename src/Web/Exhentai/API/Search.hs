@@ -1,6 +1,14 @@
 {-# LANGUAGE StrictData #-}
 
-module Web.Exhentai.API.Search where
+module Web.Exhentai.API.Search
+  ( SearchQuery (..),
+    SearchResult (..),
+    search,
+    searchRecur,
+    fetchSearchPage,
+    fetchSearchPage',
+  )
+where
 
 import Conduit
 import Control.Lens ((...))

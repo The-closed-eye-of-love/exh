@@ -1,4 +1,8 @@
-module Web.Exhentai.API.Auth where
+module Web.Exhentai.API.Auth
+  ( Credential (..),
+    auth,
+  )
+where
 
 import Data.ByteString (ByteString)
 import Network.HTTP.Client.Conduit

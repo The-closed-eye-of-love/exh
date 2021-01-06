@@ -4,7 +4,6 @@ module Web.Exhentai.Parsing.Gallery where
 
 import Control.Lens
 import Data.Text (Text, pack)
-import Text.HTML.DOM
 import Text.XML hiding (readFile)
 import Text.XML.Lens
 import Web.Exhentai.Types

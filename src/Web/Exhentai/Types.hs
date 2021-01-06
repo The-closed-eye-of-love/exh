@@ -5,7 +5,6 @@ module Web.Exhentai.Types where
 
 import Control.Lens
 import Data.Text (Text, pack)
-import Data.Time
 import Data.Void
 import Text.Megaparsec
   ( MonadParsec (takeWhile1P),

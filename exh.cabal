@@ -22,12 +22,8 @@ common common-attrs
     , aeson
     , base               >=4.10 && <5
     , bytestring
-    , containers
-    , tar-conduit
     , conduit
-    , time
-    , conduit-extra
-    , data-default
+    , containers
     , exceptions
     , html-conduit
     , http-client
@@ -35,16 +31,17 @@ common common-attrs
     , http-conduit
     , lens
     , megaparsec
-    , pretty-simple
     , monad-control
     , monad-time
     , mtl
+    , pretty-simple
     , quickjs-hs
     , retry
+    , tar-conduit
     , text
+    , time
     , transformers
     , transformers-base
-    , xml
     , xml-conduit
     , xml-lens
 
@@ -84,6 +81,7 @@ library
   build-depends:
   exposed-modules:
     Web.Exhentai.API.Auth
+    Web.Exhentai.API.Gallery
     Web.Exhentai.API.MPV
     Web.Exhentai.API.Search
     Web.Exhentai.Errors
@@ -91,7 +89,6 @@ library
     Web.Exhentai.Parsing.Image
     Web.Exhentai.Parsing.MPV
     Web.Exhentai.Parsing.Search
-    Web.Exhentai.API.Gallery
     Web.Exhentai.Types
     Web.Exhentai.Types.CookieT
     Web.Exhentai.Utils

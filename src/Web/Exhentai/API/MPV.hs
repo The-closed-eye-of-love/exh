@@ -12,6 +12,7 @@ module Web.Exhentai.API.MPV
     toRequests,
     imageDispatch,
     fetchImage,
+    fetchImage',
   )
 where
 
@@ -19,6 +20,7 @@ import Conduit
 import Control.Applicative
 import Control.Lens ((^.))
 import Control.Monad.Catch
+import Control.Monad.Trans.Cont
 import Data.Aeson
 import Data.ByteString (ByteString)
 import Data.Text (Text, unpack)
@@ -137,8 +139,11 @@ imageDispatch dreq = do
     Left e -> throwM $ JSONParseFailure e
     Right res -> pure res
 
-fetchImage :: (MonadHttpState m, MonadIO n) => DispatchRequest -> m (Response (ConduitT i ByteString n ()))
-fetchImage dreq = do
+fetchImage :: (MonadHttpState m, MonadIO n) => DispatchRequest -> ContT r m (Response (ConduitT i ByteString n ()))
+fetchImage dreq = ContT $ \k -> bracket (fetchImage' dreq) respClose k
+
+fetchImage' :: (MonadHttpState m, MonadIO n) => DispatchRequest -> m (Response (ConduitT i ByteString n ()))
+fetchImage' dreq = do
   res <- imageDispatch dreq
   req <- formRequest $ unpack $ imgLink res
   openWithJar req `catch` \(_ :: HttpException) -> do

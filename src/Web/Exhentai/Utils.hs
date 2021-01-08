@@ -63,10 +63,12 @@ scripts = named "script" . attributeIs "type" "text/javascript"
 
 infixl 8 ^?:
 
+(^?:) :: Document -> Fold Element a -> Maybe a
 doc ^?: fld = doc ^? body ... fld
 
 infixl 8 ^..:
 
+(^..:) :: Document -> Fold Element a -> [a]
 doc ^..: fld = doc ^.. body ... fld
 
 sinkAeson :: (FromJSON a, Monad m) => ConduitT ByteString o m (Either String a)

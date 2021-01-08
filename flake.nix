@@ -30,6 +30,7 @@
               haskell-language-server
               cabal-install
             ];
+            haskellPackages = hpkgs;
           };
     };
 }

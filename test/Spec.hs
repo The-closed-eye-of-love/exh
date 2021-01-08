@@ -1,11 +1,13 @@
 module Main where
 
 import Conduit
+import Control.Monad.Trans.Cont
 import Control.Retry
 import Data.Maybe
 import Network.HTTP.Client
 import Test.Hspec
 import Text.HTML.DOM
+import Web.Exhentai.API.Archiver
 import Web.Exhentai.API.Auth
 import Web.Exhentai.API.Gallery
 import Web.Exhentai.API.MPV
@@ -28,6 +30,7 @@ sanityCheck = do
   galleryNonMpv <- readFile "test/Gallery-NonMPV.html"
   galleryReplaced <- readFile "test/Gallery-Replaced.html"
   search <- readFile "test/Search-Extended.html"
+  archiver <- readFile "test/Archiver-Download.html"
   hspec $ do
     describe "Image.imageSrc" $ do
       it "should return the image source link" $ do
@@ -96,3 +99,7 @@ sanityCheck = do
     describe "Search.galleryLink" $ do
       it "should return galleries" $ do
         (search ^?: S.galleryPreviewElement . S.galleryLink) `shouldSatisfy` isJust
+
+    describe "Archiver.downloadLink" $ do
+      it "should return the download link of the archive" $ do
+        (archiver ^?: downloadLink) `shouldSatisfy` isJust

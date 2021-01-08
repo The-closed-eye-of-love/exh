@@ -85,6 +85,7 @@ library
     Web.Exhentai.API.MPV
     Web.Exhentai.API.Search
     Web.Exhentai.API.Watched
+    Web.Exhentai.API.Archiver
     Web.Exhentai.Errors
     Web.Exhentai.Parsing.Gallery
     Web.Exhentai.Parsing.Image

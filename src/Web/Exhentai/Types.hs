@@ -8,9 +8,11 @@ import Data.Set (Set, fromList, toList)
 import Data.Text (Text, pack)
 import Data.Void
 import Text.Megaparsec
-  ( MonadParsec (takeWhile1P),
+  ( MonadParsec (notFollowedBy, takeWhile1P),
     Parsec,
+    anySingle,
     chunk,
+    many,
     optional,
     parseMaybe,
     single,
@@ -153,3 +155,18 @@ parseGalleryLink = parseMaybe galleryLink
       token <- takeWhile1P Nothing (/= '/')
       _ <- optional $ single '/'
       pure Gallery {..}
+
+parsePreviewLink :: Text -> Maybe Text
+parsePreviewLink = parseMaybe previewLink
+  where
+    previewLink :: Parser Text
+    previewLink = do
+      _ <- many $ do
+        notFollowedBy urlOpening
+        anySingle
+      _ <- urlOpening
+      url <- takeWhile1P Nothing (/= ')')
+      _ <- takeRest
+      pure url
+    urlOpening :: Parser Text
+    urlOpening = chunk "url("

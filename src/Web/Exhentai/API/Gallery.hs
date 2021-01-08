@@ -27,6 +27,7 @@ import qualified Prelude as P
 
 data GalleryInfo = GalleryInfo
   { title :: {-# UNPACK #-} Text,
+    previewLink :: {-# UNPACK #-} Text,
     category :: GalleryCat,
     jaTitle :: {-# UNPACK #-} Text,
     uploader :: {-# UNPACK #-} Text,
@@ -60,6 +61,7 @@ readVisibility v = Other v
 parseGallery :: Document -> Maybe GalleryInfo
 parseGallery d = do
   title <- d ^?: G.enTitle
+  previewLink <- d ^?: G.previewStr >>= parsePreviewLink
   jaTitle <- d ^?: G.jaTitle
   category <- d ^?: G.category
   uploader <- d ^?: G.uploader

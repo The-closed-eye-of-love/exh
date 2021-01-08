@@ -68,6 +68,9 @@ mainMetaM = mainMeta ... div . id "gd4"
 mainMetaR :: Traversal' Element Element
 mainMetaR = mainMeta ... div . id "gd5"
 
+previewStr :: Traversal' Element Text
+previewStr = meta ... id "gleft" ... id "gd1" ... attr "style"
+
 category :: Traversal' Element GalleryCat
 category = mainMetaL ... div . id "gdc" ... div . lower . _Content . _GalleryCat
 

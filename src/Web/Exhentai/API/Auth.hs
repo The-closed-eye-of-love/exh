@@ -40,4 +40,3 @@ auth Credential {..} = do
   modifyingJar req3
   req4 <- formRequest "https://exhentai.org/mytags"
   modifyingJar req4
-  pure ()

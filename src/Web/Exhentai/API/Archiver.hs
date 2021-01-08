@@ -41,10 +41,11 @@ streamWith parts url = ContT $ \k -> do
     Just l -> do
       newReq <- formRequest $ unpack l
       let req' = setQueryString [("start", Just "1")] newReq
-      bracket
-        (respOpen req')
-        respClose
-        (retryWhenTimeout . k)
+      retryWhenTimeout $
+        bracket
+          (respOpen req')
+          respClose
+          k
 
 streamOriginal :: (MonadHttpState m, MonadIO n) => Text -> ContT r m (Response (ConduitT i ByteString n ()))
 streamOriginal = streamWith originalParts

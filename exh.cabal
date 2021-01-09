@@ -80,6 +80,7 @@ library
   import:          common-attrs
   build-depends:
   exposed-modules:
+    Web.Exhentai
     Web.Exhentai.API.Auth
     Web.Exhentai.API.Gallery
     Web.Exhentai.API.MPV

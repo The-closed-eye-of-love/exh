@@ -28,6 +28,7 @@ instance FromJSON MpvImage where
       <*> o .: "k"
       <*> o .: "t"
 
+-- | All the variables defined in the scripts that came with the MPV
 data Vars = Vars
   { gid :: {-# UNPACK #-} Int,
     mpvkey :: {-# UNPACK #-} Text,

@@ -15,6 +15,8 @@ data Credential = Credential
   }
   deriving (Show, Eq)
 
+-- | Authenticates and loads user preferences.
+-- This should be called before any other functions are called
 auth :: MonadHttpState m => Credential -> m ()
 auth Credential {..} = do
   initReq <- formRequest "POST https://forums.e-hentai.org/index.php"

@@ -25,6 +25,7 @@ import Web.Exhentai.Utils
 import Prelude hiding (length)
 import qualified Prelude as P
 
+-- | Information about a gallery
 data GalleryInfo = GalleryInfo
   { title :: {-# UNPACK #-} Text,
     previewLink :: {-# UNPACK #-} Text,
@@ -49,15 +50,16 @@ data Visibility
   = Visible
   | Replaced
   | Expunged
-  | Other {-# UNPACK #-} Text
+  | Unknown {-# UNPACK #-} Text
   deriving (Show, Eq, Generic)
 
 readVisibility :: Text -> Visibility
 readVisibility "Yes" = Visible
 readVisibility "No (Replaced)" = Replaced
 readVisibility "No (Expunged)" = Expunged
-readVisibility v = Other v
+readVisibility v = Unknown v
 
+-- | Extract all gallery informations from a document
 parseGallery :: Document -> Maybe GalleryInfo
 parseGallery d = do
   title <- d ^?: G.enTitle
@@ -84,6 +86,7 @@ parseGallery d = do
       pure GalleryInfo {..}
     _ -> Nothing
 
+-- | Fetch a gallery's 'GalleryInfo'
 fetchGalleryInfo :: MonadHttpState m => Gallery -> m GalleryInfo
 fetchGalleryInfo g = do
   let url = toGalleryLink g

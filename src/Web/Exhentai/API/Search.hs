@@ -56,14 +56,17 @@ parseSearchPage d =
         last ^? linkOf
    in SearchResult {..}
 
+-- | Fetch a search page using a 'Request'
 fetchSearchPage' :: MonadHttpState m => Request -> m SearchResult
 fetchSearchPage' req = do
   d <- htmlRequest req
   pure $ parseSearchPage d
 
+-- | Fetch a search page using its url
 fetchSearchPage :: MonadHttpState m => Text -> m SearchResult
 fetchSearchPage = fetchSearchPage' <=< formRequest . unpack
 
+-- | Search a search query
 search :: MonadHttpState m => SearchQuery -> m SearchResult
 search SearchQuery {..} = do
   let catQ = maybe [] (\c -> [("f_cats", Just $ fromString $ show $ queryArgCat c)]) categories
@@ -77,6 +80,7 @@ search SearchQuery {..} = do
           initReq
   fetchSearchPage' req
 
+-- | Iterate through all the Galleries asosciated with a search query, putting them in a stream
 searchRecur :: forall m i. MonadHttpState m => SearchQuery -> ConduitT i Gallery m ()
 searchRecur q = do
   SearchResult {..} <- lift $ search q

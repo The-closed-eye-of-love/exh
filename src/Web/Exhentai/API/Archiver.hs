@@ -1,4 +1,8 @@
-module Web.Exhentai.API.Archiver where
+module Web.Exhentai.API.Archiver
+  ( streamOriginal,
+    streamResampled,
+  )
+where
 
 import Conduit
 import Control.Lens (Traversal')
@@ -47,8 +51,18 @@ streamWith parts url = ContT $ \k -> do
           respClose
           k
 
-streamOriginal :: (MonadHttpState m, MonadIO n) => Text -> ContT r m (Response (ConduitT i ByteString n ()))
+-- | Download an origian archive from an archiver url as a stream
+streamOriginal ::
+  (MonadHttpState m, MonadIO n) =>
+  -- | Archiver url, usually the 'archiverLink` field
+  Text ->
+  ContT r m (Response (ConduitT i ByteString n ()))
 streamOriginal = streamWith originalParts
 
-streamResampled :: (MonadHttpState m, MonadIO n) => Text -> ContT r m (Response (ConduitT i ByteString n ()))
+-- | Download an resampled archive from an archiver url as a stream
+streamResampled ::
+  (MonadHttpState m, MonadIO n) =>
+  -- | Archiver url, usually the 'archiverLink` field
+  Text ->
+  ContT r m (Response (ConduitT i ByteString n ()))
 streamResampled = streamWith resampledParts

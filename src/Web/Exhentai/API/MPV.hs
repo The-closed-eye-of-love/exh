@@ -107,6 +107,7 @@ instance ToJSON DispatchRequest where
                "mpvkey" .= mpvKey
              ]
 
+-- | Generate a list of requests from a 'Vars'
 toRequests :: Vars -> [DispatchRequest]
 toRequests Vars {..} = zipWith formReq [1 ..] imageList
   where
@@ -119,6 +120,7 @@ toRequests Vars {..} = zipWith formReq [1 ..] imageList
           mpvKey = mpvkey
         }
 
+-- | Fetch the 'Vars' from a Gallery's mpv page
 fetchMpv :: (MonadHttpState m, MonadIO m) => Gallery -> m Vars
 fetchMpv g = htmlRequest' (toMpvLink g) >>= parseMpv
 
@@ -130,6 +132,7 @@ parseMpv doc = do
     Error e -> throwM $ ExtractionFailure e
     Success vars -> pure vars
 
+-- | Calls the API to dispatch a image request to a H@H server
 imageDispatch :: MonadHttpState m => DispatchRequest -> m DispatchResult
 imageDispatch dreq = do
   initReq <- formRequest "https://exhentai.org/api.php"
@@ -139,9 +142,11 @@ imageDispatch dreq = do
     Left e -> throwM $ JSONParseFailure e
     Right res -> pure res
 
+-- | Fetch an image with a 'DispatchRequest'
 fetchImage :: (MonadHttpState m, MonadIO n) => DispatchRequest -> ContT r m (Response (ConduitT i ByteString n ()))
 fetchImage dreq = ContT $ \k -> bracket (fetchImage' dreq) respClose k
 
+-- | Like 'fetchImage', but the user is responsible of closing the response
 fetchImage' :: (MonadHttpState m, MonadIO n) => DispatchRequest -> m (Response (ConduitT i ByteString n ()))
 fetchImage' dreq = do
   res <- imageDispatch dreq

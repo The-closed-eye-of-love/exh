@@ -31,7 +31,7 @@ class (Monad m, MonadCatch m, MonadThrow m) => MonadHttp m where
   respClose :: Response body -> m ()
   reqNoBody :: Request -> m (Response ())
 
-class (MonadMask m, MonadTime m, MonadHttp m, MonadUnliftIO m) => MonadHttpState m where
+class (MonadMask m, MonadTime m, MonadHttp m, MonadIO m) => MonadHttpState m where
   takeCookieJar :: m CookieJar
   readCookieJar :: m CookieJar
   putCookieJar :: CookieJar -> m ()
@@ -116,6 +116,23 @@ instance
   respClose = responseClose
   reqNoBody = httpNoBody
 
+instance
+  {-# OVERLAPPABLE #-}
+  ( MonadHttp m,
+    MonadTrans f,
+    Monad (f m),
+    MonadCatch (f m),
+    MonadThrow (f m)
+  ) =>
+  MonadHttp (f m)
+  where
+  getRetryPolicy = lift getRetryPolicy
+  formRequest = lift . formRequest
+  attachFormData p = lift . attachFormData p
+  respOpen = lift . respOpen
+  respClose = lift . respClose
+  reqNoBody = lift . reqNoBody
+
 retryWhenTimeout :: MonadHttpState m => m a -> m a
 retryWhenTimeout action = do
   Policy policy <- getRetryPolicy
@@ -146,3 +163,18 @@ instance
   readCookieJar = do
     ref <- asks jarRef
     liftIO $ readMVar ref
+
+instance
+  {-# OVERLAPPABLE #-}
+  ( MonadHttpState m,
+    MonadTrans f,
+    MonadMask (f m),
+    MonadTime (f m),
+    MonadHttp (f m),
+    MonadIO (f m)
+  ) =>
+  MonadHttpState (f m)
+  where
+  takeCookieJar = lift takeCookieJar
+  putCookieJar = lift . putCookieJar
+  readCookieJar = lift readCookieJar

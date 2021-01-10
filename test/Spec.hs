@@ -7,7 +7,6 @@ import Data.Maybe
 import Network.HTTP.Client
 import Test.Hspec
 import Text.HTML.DOM
-import Web.Exhentai.API.Archiver
 import Web.Exhentai.API.Auth
 import Web.Exhentai.API.Gallery
 import Web.Exhentai.API.MPV
@@ -99,7 +98,3 @@ sanityCheck = do
     describe "Search.galleryLink" $ do
       it "should return galleries" $ do
         (search ^?: S.galleryPreviewElement . S.galleryLink) `shouldSatisfy` isJust
-
-    describe "Archiver.downloadLink" $ do
-      it "should return the download link of the archive" $ do
-        (archiver ^?: downloadLink) `shouldSatisfy` isJust

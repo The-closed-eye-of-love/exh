@@ -127,11 +127,21 @@ newtype FavoriteCount = FavoriteCount {unFavoriteCount :: Int}
 parseFavoriteCount :: Text -> Maybe FavoriteCount
 parseFavoriteCount = parseMaybe favoriteCount
   where
+    once = do
+      _ <- chunk "Once"
+      pure $ FavoriteCount 1
+    never = do
+      _ <- chunk "Never"
+      pure $ FavoriteCount 0
     favoriteCount :: Parser FavoriteCount
-    favoriteCount = do
-      d <- decimal
-      _ <- chunk " times"
-      pure $ FavoriteCount d
+    favoriteCount =
+      ( do
+          d <- decimal
+          _ <- chunk " times"
+          pure $ FavoriteCount d
+      )
+        <|> once
+        <|> never
 
 data Gallery = Gallery
   { galleryId :: {-# UNPACK #-} !Int,

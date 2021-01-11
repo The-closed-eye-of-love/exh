@@ -5,6 +5,8 @@ module Web.Exhentai.API.Search
     SearchResult (..),
     search,
     searchRecur,
+    searchRecurResumable,
+    searchRecurResumable',
     fetchSearchPage,
     fetchSearchPage',
   )
@@ -80,19 +82,45 @@ search SearchQuery {..} = do
           initReq
   fetchSearchPage' req
 
--- | Iterate through all the Galleries asosciated with a search query, putting them in a stream
-searchRecur :: forall m i. MonadHttpState m => SearchQuery -> ConduitT i Gallery m ()
+-- | Iterate through all the Galleries asosciated with a search query, putting them into a stream
+searchRecur :: MonadHttpState m => SearchQuery -> ConduitT i Gallery m ()
 searchRecur q = do
   SearchResult {..} <- lift $ search q
   yieldMany galleries
   case nextPage of
     Nothing -> pure ()
     Just url -> searchRecur' url
-  where
-    searchRecur' :: Text -> ConduitT i Gallery m ()
-    searchRecur' url = do
-      SearchResult {..} <- lift $ fetchSearchPage url
-      yieldMany galleries
-      case nextPage of
-        Nothing -> pure ()
-        Just url' -> searchRecur' url'
+
+searchRecur' ::
+  MonadHttpState m =>
+  -- | url
+  Text ->
+  ConduitT i Gallery m ()
+searchRecur' url = do
+  SearchResult {..} <- lift $ fetchSearchPage url
+  yieldMany galleries
+  case nextPage of
+    Nothing -> pure ()
+    Just url' -> searchRecur' url'
+
+-- | A resumable version of 'searchRecur' that reports it's progress.
+searchRecurResumable :: MonadHttpState m => SearchQuery -> ConduitT i (Either Text Gallery) m ()
+searchRecurResumable q = do
+  SearchResult {..} <- lift $ search q
+  yieldMany $ map Right galleries
+  case nextPage of
+    Nothing -> pure ()
+    Just url -> searchRecurResumable' url
+
+searchRecurResumable' ::
+  MonadHttpState m =>
+  -- | url
+  Text ->
+  ConduitT i (Either Text Gallery) m ()
+searchRecurResumable' url = do
+  yield $ Left url
+  SearchResult {..} <- lift $ fetchSearchPage url
+  yieldMany $ map Right galleries
+  case nextPage of
+    Nothing -> pure ()
+    Just url' -> searchRecurResumable' url'

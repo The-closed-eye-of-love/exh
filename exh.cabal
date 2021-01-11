@@ -1,6 +1,6 @@
 cabal-version:   3.0
 name:            exh
-version:         0.1.0
+version:         0.2.0
 synopsis:        A library for crawling exhentai
 description:
   A library for crawling exhentai, with the support of streaming

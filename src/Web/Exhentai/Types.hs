@@ -3,6 +3,7 @@
 
 module Web.Exhentai.Types where
 
+import Control.Applicative ((<|>))
 import Control.Lens
 import Data.Set (Set, fromList, toList)
 import Data.Text (Text, pack)
@@ -98,9 +99,12 @@ parseAverageRating :: Text -> Maybe AverageRating
 parseAverageRating = parseMaybe averageRating
   where
     averageRating :: Parser AverageRating
-    averageRating = do
-      _ <- chunk "Average: "
-      AverageRating <$> float
+    averageRating =
+      ( do
+          _ <- chunk "Average: "
+          AverageRating <$> float
+      )
+        <|> (chunk "Not Yet Rated" >> pure (AverageRating 0))
 
 newtype GalleryLength = GalleryLength {unGalleryLength :: Int}
   deriving newtype (Show, Eq)

@@ -42,7 +42,8 @@ data GalleryInfo = GalleryInfo
     visibility :: Visibility,
     language :: {-# UNPACK #-} Text,
     length :: {-# UNPACK #-} Int,
-    archiverLink :: {-# UNPACK #-} Text
+    archiverLink :: {-# UNPACK #-} Text,
+    torrentLink :: {-# UNPACK #-} Text
   }
   deriving (Show, Eq, Generic)
 
@@ -70,6 +71,7 @@ parseGallery d = do
   (coerce -> rating) <- annotate "average rating" $ d ^?: G.averageRating
   ratingCount <- annotate "rating count" $ d ^?: G.ratingCount
   (coerce -> archiverLink) <- annotate "archiver link" $ d ^?: G.popupLink
+  (coerce -> torrentLink) <- annotate "torrent link" $ case d ^..: G.popupLink of (_ : tl : _) -> Just tl; _ -> Nothing
   let newer = d ^?: G.newer
   case d ^..: G.metaValues of
     (time : parn : vis : lang : _ : len : fav : _) -> do

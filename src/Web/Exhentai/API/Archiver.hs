@@ -41,7 +41,7 @@ streamWith parts url = ContT $ \k -> do
   req <- formDataBody parts initReq
   d <- htmlRequest req
   case d ^?: downloadLink of
-    Nothing -> throwM $ XMLParseFailure url
+    Nothing -> throwM $ XMLParseFailure "download link" url
     Just l -> do
       newReq <- formRequest $ unpack l
       let req' = setQueryString [("start", Just "1")] newReq

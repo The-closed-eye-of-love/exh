@@ -87,3 +87,7 @@ htmlRequest' url = do
 
 parseUploadTime :: Text -> Maybe UTCTime
 parseUploadTime s = parseTimeM True defaultTimeLocale "%F %R" $ unpack s
+
+annotate :: ann -> Maybe a -> Either ann a
+annotate _ (Just a') = Right a'
+annotate ann Nothing = Left ann

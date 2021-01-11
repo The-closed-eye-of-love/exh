@@ -9,7 +9,7 @@ import Data.Text (Text)
 
 data ExhentaiError
   = JSONParseFailure String
-  | XMLParseFailure Text
+  | XMLParseFailure Text Text
   | ExtractionFailure String
   deriving (Show, Eq)
   deriving (Exception)

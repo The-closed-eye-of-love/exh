@@ -30,7 +30,7 @@ data GalleryInfo = GalleryInfo
   { title :: {-# UNPACK #-} Text,
     previewLink :: {-# UNPACK #-} Text,
     category :: GalleryCat,
-    jaTitle :: {-# UNPACK #-} Text,
+    jaTitle :: Maybe Text,
     uploader :: {-# UNPACK #-} Text,
     rating :: {-# UNPACK #-} Float,
     ratingCount :: {-# UNPACK #-} Int,
@@ -60,31 +60,31 @@ readVisibility "No (Expunged)" = Expunged
 readVisibility v = Unknown v
 
 -- | Extract all gallery informations from a document
-parseGallery :: Document -> Maybe GalleryInfo
+parseGallery :: Document -> Either Text GalleryInfo
 parseGallery d = do
-  title <- d ^?: G.enTitle
-  previewLink <- d ^?: G.previewStr >>= parsePreviewLink
-  jaTitle <- d ^?: G.jaTitle
-  category <- d ^?: G.category
-  uploader <- d ^?: G.uploader
-  (coerce -> rating) <- d ^?: G.averageRating
-  ratingCount <- d ^?: G.ratingCount
-  (coerce -> archiverLink) <- d ^?: G.archiverLink
+  title <- annotate "title" $ d ^?: G.enTitle
+  previewLink <- annotate "preview link" $ d ^?: G.previewStr >>= parsePreviewLink
+  let jaTitle = d ^?: G.jaTitle
+  category <- annotate "category" $ d ^?: G.category
+  uploader <- annotate "uploader" $ d ^?: G.uploader
+  (coerce -> rating) <- annotate "average rating" $ d ^?: G.averageRating
+  ratingCount <- annotate "rating count" $ d ^?: G.ratingCount
+  (coerce -> archiverLink) <- annotate "archiver link" $ d ^?: G.archiverLink
   let newer = d ^?: G.newer
   case d ^..: G.metaValues of
     (time : parn : vis : lang : _ : len : fav : _) -> do
-      uploadTime <- time ^? lower . _Content >>= parseUploadTime
+      uploadTime <- annotate "upload time" $ time ^? lower . _Content >>= parseUploadTime
       let parent = parn ^? lower . _Element . attr "href" . _GalleryLink
-      (readVisibility -> visibility) <- vis ^? lower . _Content
-      (strip -> language) <- lang ^? lower . _Content
-      (coerce -> length) <- len ^? lower . _Content >>= parseGalleryLength
+      (readVisibility -> visibility) <- annotate "visibility" $ vis ^? lower . _Content
+      (strip -> language) <- annotate "language" $ lang ^? lower . _Content
+      (coerce -> length) <- annotate "length" $ len ^? lower . _Content >>= parseGalleryLength
       let cats = d ^..: G.tagCategory
       let tags' = map (^.. G.tags) $ d ^..: G.tagsByCategory
-      guard $ P.length cats == P.length tags'
+      unless (P.length cats == P.length tags') $ Left ""
       let tags = zip cats tags'
-      (coerce -> favoriteCount) <- fav ^? lower . _Content >>= parseFavoriteCount
+      (coerce -> favoriteCount) <- annotate "favorite count" $ fav ^? lower . _Content >>= parseFavoriteCount
       pure GalleryInfo {..}
-    _ -> Nothing
+    _ -> Left "extracting metadata"
 
 -- | Fetch a gallery's 'GalleryInfo'
 fetchGalleryInfo :: MonadHttpState m => Gallery -> m GalleryInfo
@@ -92,5 +92,5 @@ fetchGalleryInfo g = do
   let url = toGalleryLink g
   d <- htmlRequest' url
   case parseGallery d of
-    Nothing -> throwM $ XMLParseFailure url
-    Just info -> pure info
+    Left err -> throwM $ XMLParseFailure err url
+    Right info -> pure info

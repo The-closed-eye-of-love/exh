@@ -8,6 +8,7 @@ import Control.Lens
 import Data.Set (Set, fromList, toList)
 import Data.Text (Text, pack)
 import Data.Void
+import GHC.Generics
 import Text.Megaparsec
   ( MonadParsec (notFollowedBy, takeWhile1P),
     Parsec,
@@ -147,7 +148,7 @@ data Gallery = Gallery
   { galleryId :: {-# UNPACK #-} !Int,
     token :: {-# UNPACK #-} !Text
   }
-  deriving (Show, Eq)
+  deriving (Show, Eq, Generic)
 
 _GalleryLink :: Prism' Text Gallery
 _GalleryLink = prism' toGalleryLink parseGalleryLink

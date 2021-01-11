@@ -5,6 +5,7 @@ module Web.Exhentai.API.Auth
 where
 
 import Data.ByteString (ByteString)
+import GHC.Generics
 import Network.HTTP.Client.Conduit
 import Network.HTTP.Client.MultipartFormData
 import Web.Exhentai.Types.CookieT
@@ -13,7 +14,7 @@ data Credential = Credential
   { username :: ByteString,
     password :: ByteString
   }
-  deriving (Show, Eq)
+  deriving (Show, Eq, Generic)
 
 -- | Authenticates and loads user preferences.
 -- This should be called before any other functions are called

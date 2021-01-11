@@ -4,6 +4,7 @@ module Web.Exhentai.Parsing.Gallery where
 
 import Control.Lens
 import Data.Text (Text, pack)
+import GHC.Generics
 import Text.XML hiding (readFile)
 import Text.XML.Lens
 import Web.Exhentai.Types
@@ -29,7 +30,7 @@ data TagCategory
   | Female
   | Misc
   | Reclass
-  deriving (Show, Eq, Enum)
+  deriving (Show, Eq, Enum, Generic)
 
 readTagCat :: Text -> Maybe TagCategory
 readTagCat "language:" = Just Language

@@ -6,10 +6,14 @@ module Web.Exhentai.Errors where
 
 import Control.Exception
 import Data.Text (Text)
+import GHC.Generics
 
 data ExhentaiError
   = JSONParseFailure String
-  | XMLParseFailure Text Text
+  | XMLParseFailure
+      { reason :: Text,
+        url :: Text
+      }
   | ExtractionFailure String
-  deriving (Show, Eq)
+  deriving (Show, Eq, Generic)
   deriving (Exception)

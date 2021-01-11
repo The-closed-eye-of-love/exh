@@ -3,6 +3,7 @@ module Main where
 import Conduit
 import Control.Monad.Trans.Cont
 import Control.Retry
+import Data.Either
 import Data.Maybe
 import Network.HTTP.Client
 import Test.Hspec
@@ -83,9 +84,9 @@ sanityCheck = do
 
     describe "Gallery.parseGallery" $ do
       it "should parse gallery just fine" $ do
-        parseGallery galleryMpv `shouldSatisfy` isJust
-        parseGallery galleryNonMpv `shouldSatisfy` isJust
-        parseGallery galleryReplaced `shouldSatisfy` isJust
+        parseGallery galleryMpv `shouldSatisfy` isRight
+        parseGallery galleryNonMpv `shouldSatisfy` isRight
+        parseGallery galleryReplaced `shouldSatisfy` isRight
 
     describe "Search.pages" $ do
       it "should return available page range" $ do

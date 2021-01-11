@@ -111,11 +111,8 @@ tagsByCategory = tagList ... td . withoutAttribute "class"
 tags :: Traversal' Element Text
 tags = td ... div ... a . lower . _Content
 
-archiverLink :: Traversal' Element PopUpLink
-archiverLink = mainMetaR ... cl "g2 gsp" ... attr "onclick" . _PopUpLink
-
-torrentLink :: Traversal' Element PopUpLink
-torrentLink = mainMetaR ... cl "g2" ... attr "onclick" . _PopUpLink
+popupLink :: Traversal' Element PopUpLink
+popupLink = mainMetaR ... named "p" ... attr "onclick" . _PopUpLink
 
 imagePages :: Traversal' Element Text
 imagePages = div . id "gdt" ... cl "gdtl" ... a . attr "href"

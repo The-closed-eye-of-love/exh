@@ -69,7 +69,7 @@ parseGallery d = do
   uploader <- annotate "uploader" $ d ^?: G.uploader
   (coerce -> rating) <- annotate "average rating" $ d ^?: G.averageRating
   ratingCount <- annotate "rating count" $ d ^?: G.ratingCount
-  (coerce -> archiverLink) <- annotate "archiver link" $ d ^?: G.archiverLink
+  (coerce -> archiverLink) <- annotate "archiver link" $ d ^?: G.popupLink
   let newer = d ^?: G.newer
   case d ^..: G.metaValues of
     (time : parn : vis : lang : _ : len : fav : _) -> do

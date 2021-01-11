@@ -30,7 +30,7 @@ sanityCheck = do
   galleryNonMpv <- readFile "test/Gallery-NonMPV.html"
   galleryReplaced <- readFile "test/Gallery-Replaced.html"
   search <- readFile "test/Search-Extended.html"
-  archiver <- readFile "test/Archiver-Download.html"
+  galleryWithAd <- readFile "test/Gallery-ADs.html"
   hspec $ do
     describe "Image.imageSrc" $ do
       it "should return the image source link" $ do
@@ -87,6 +87,7 @@ sanityCheck = do
         parseGallery galleryMpv `shouldSatisfy` isRight
         parseGallery galleryNonMpv `shouldSatisfy` isRight
         parseGallery galleryReplaced `shouldSatisfy` isRight
+        parseGallery galleryWithAd `shouldSatisfy` isRight
 
     describe "Search.pages" $ do
       it "should return available page range" $ do

@@ -28,6 +28,7 @@ data TagCategory
   | Male
   | Female
   | Misc
+  | Reclass
   deriving (Show, Eq, Enum)
 
 readTagCat :: Text -> Maybe TagCategory
@@ -39,6 +40,7 @@ readTagCat "artist:" = Just Artist
 readTagCat "male:" = Just Male
 readTagCat "female:" = Just Female
 readTagCat "misc:" = Just Misc
+readTagCat "reclass:" = Just Reclass
 readTagCat _ = Nothing
 
 _TagCategory :: Prism' Text TagCategory

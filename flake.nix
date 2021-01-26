@@ -16,11 +16,7 @@
     ) // {
       overlay = self: super:
         let
-          hpkgs = super.haskellPackages.override {
-            overrides = hself: hsuper: {
-              quickjs-hs = with hself; callPackage ./quickjs-hs.nix {};
-            };
-          };
+          hpkgs = super.haskellPackages;
           exh = hpkgs.callCabal2nix "exh" ./. {};
         in
           with super; with haskell.lib;

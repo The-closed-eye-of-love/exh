@@ -21,7 +21,6 @@ import Control.Monad
 import Control.Monad.Trans.Cont
 import Data.ByteString (ByteString)
 import qualified Data.ByteString as B
-import Data.Time.Clock
 import Network.HTTP.Client hiding (Cookie)
 import Network.HTTP.Client.MultipartFormData
 
@@ -103,28 +102,6 @@ cookieToIO m = do
     interpretViaHandler $
       runComposition m
 {-# INLINE cookieToIO #-}
-
---------------------------------------------------
---
-
-data Time :: Effect where
-  CurrentTime :: Time m UTCTime
-
-currentTime :: Eff Time m => m UTCTime
-currentTime = send CurrentTime
-{-# INLINE currentTime #-}
-
-data TimeH
-
-instance Eff (Embed IO) m => Handler TimeH Time m where
-  effHandler CurrentTime = embed getCurrentTime
-  {-# INLINEABLE effHandler #-}
-
-type TimeToIOC = InterpretC TimeH Time
-
-timeToIO :: Eff (Embed IO) m => TimeToIOC m a -> m a
-timeToIO = interpretViaHandler
-{-# INLINE timeToIO #-}
 
 --------------------------------------------------
 --

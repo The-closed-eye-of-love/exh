@@ -128,6 +128,19 @@ conduitIOToIO = interpretViaHandler
 --------------------------------------------------
 --
 
+type ExhC = CompositionC '[HttpToIOC, ConduitIOToIOC, CookieToIOC]
+
+exhToIO :: (Effs '[Embed IO, Reader Manager] m, Threaders '[ReaderThreads] m p) => ExhC m a -> m a
+exhToIO m =
+  cookieToIO $
+    conduitIOToIO $
+      httpToIO $
+        runComposition m
+{-# INLINE exhToIO #-}
+
+--------------------------------------------------
+--
+
 attachFormData :: Eff Http m => [PartM m] -> Request -> m Request
 attachFormData parts req = do
   boundary <- genBoundary

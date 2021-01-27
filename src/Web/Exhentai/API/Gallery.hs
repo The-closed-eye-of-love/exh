@@ -23,7 +23,6 @@ import Data.Maybe
 import Data.Set (Set, fromList, toList)
 import Data.Text (Text, strip)
 import Data.Time
-import GHC.Generics
 import Network.HTTP.Client hiding (Cookie)
 import Optics.Core
 import Optics.TH
@@ -46,7 +45,7 @@ data TagCategory
   | Female
   | Misc'
   | Reclass
-  deriving (Show, Eq, Enum, Generic)
+  deriving (Show, Eq, Enum)
 
 readTagCat :: Text -> Maybe TagCategory
 readTagCat "language:" = Just Language
@@ -114,14 +113,14 @@ data GalleryInfo = GalleryInfo
     archiverLink :: {-# UNPACK #-} Text,
     torrentLink :: {-# UNPACK #-} Text
   }
-  deriving (Show, Eq, Generic)
+  deriving (Show, Eq)
 
 data Visibility
   = Visible
   | Replaced
   | Expunged
   | Unknown {-# UNPACK #-} Text
-  deriving (Show, Eq, Generic)
+  deriving (Show, Eq)
 
 readVisibility :: Text -> Visibility
 readVisibility "Yes" = Visible

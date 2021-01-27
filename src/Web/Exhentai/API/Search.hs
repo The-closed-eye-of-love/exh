@@ -25,7 +25,6 @@ import Data.Set (Set, (\\))
 import Data.String
 import Data.Text (Text, unpack)
 import Data.Text.Encoding (encodeUtf8)
-import GHC.Generics
 import Network.HTTP.Client hiding (Cookie)
 import Optics.Core
 import Optics.TH
@@ -40,7 +39,7 @@ data SearchQuery = SearchQuery
   { categories :: Maybe (Set GalleryCategory),
     searchString :: {-# UNPACK #-} Text
   }
-  deriving (Show, Eq, Generic)
+  deriving (Show, Eq)
 
 queryArgCat :: Set GalleryCategory -> Int
 queryArgCat s = toBitField $ allGalleryCategorys \\ s
@@ -50,7 +49,7 @@ data SearchResult = SearchResult
     prevPage :: Maybe Text,
     nextPage :: Maybe Text
   }
-  deriving (Show, Eq, Generic)
+  deriving (Show, Eq)
 
 parseSearchPage :: Document -> SearchResult
 parseSearchPage d =

@@ -8,7 +8,6 @@ module Web.Exhentai.Types where
 import Control.Applicative ((<|>))
 import Data.Text (Text, pack)
 import Data.Void
-import GHC.Generics
 import Optics.TH
 import Text.Megaparsec
   ( MonadParsec (notFollowedBy, takeWhile1P),
@@ -78,7 +77,7 @@ data Gallery = Gallery
   { galleryId :: {-# UNPACK #-} !Int,
     token :: {-# UNPACK #-} !Text
   }
-  deriving (Show, Eq, Generic)
+  deriving (Show, Eq)
 
 toGalleryLink :: Gallery -> Text
 toGalleryLink Gallery {..} = "https://exhentai.org/g/" <> pack (show galleryId) <> "/" <> token <> "/"

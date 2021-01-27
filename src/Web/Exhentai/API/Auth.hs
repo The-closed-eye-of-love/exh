@@ -12,7 +12,6 @@ import Control.Effect.Bracket
 import Control.Effect.Error
 import Control.Effect.Exh
 import Data.ByteString (ByteString)
-import GHC.Generics
 import Network.HTTP.Client hiding (Cookie)
 import Network.HTTP.Client.MultipartFormData
 import Optics.TH
@@ -21,7 +20,7 @@ data Credential = Credential
   { username :: ByteString,
     password :: ByteString
   }
-  deriving (Show, Eq, Generic)
+  deriving (Show, Eq)
 
 -- | Authenticates and loads user preferences.
 -- This should be called before any other functions are called

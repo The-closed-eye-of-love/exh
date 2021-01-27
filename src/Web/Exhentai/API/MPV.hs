@@ -12,7 +12,6 @@ module Web.Exhentai.API.MPV
     Server (..),
     Dim (..),
     MpvImage (..),
-    allScripts,
     fetchMpv,
     toRequests,
     imageDispatch,
@@ -31,7 +30,6 @@ import Data.Aeson
 import Data.ByteString (ByteString)
 import Data.Text (Text, unpack)
 import Data.Text.Encoding
-import GHC.Generics
 import Network.HTTP.Client.Conduit
 import Optics.Core
 import Optics.TH
@@ -46,7 +44,7 @@ import Prelude hiding ((!!))
 data Server
   = HAtH {-# UNPACK #-} Int
   | Other {-# UNPACK #-} Text
-  deriving (Show, Eq, Generic)
+  deriving (Show, Eq)
 
 instance FromJSON Server where
   parseJSON v =
@@ -81,7 +79,7 @@ data DispatchResult = DispatchResult
     -- | The server that serves this image
     server :: Server
   }
-  deriving (Show, Eq, Generic)
+  deriving (Show, Eq)
 
 instance FromJSON DispatchResult where
   parseJSON = withObject "imagedispatch result" $ \o ->
@@ -102,7 +100,7 @@ data DispatchRequest = DispatchRequest
     mpvKey :: {-# UNPACK #-} Text,
     exclude :: Maybe Server
   }
-  deriving (Show, Eq, Generic)
+  deriving (Show, Eq)
 
 instance ToJSON DispatchRequest where
   toJSON DispatchRequest {..} = object l
@@ -173,7 +171,7 @@ data MpvImage = MpvImage
     key :: {-# UNPACK #-} Text,
     thumbnail :: {-# UNPACK #-} Text
   }
-  deriving (Show, Eq, Generic)
+  deriving (Show, Eq)
 
 instance FromJSON MpvImage where
   parseJSON = withObject "mpv image" $ \o ->
@@ -189,7 +187,7 @@ data Vars = Vars
     pageCount :: {-# UNPACK #-} Int,
     imageList :: [MpvImage]
   }
-  deriving (Show, Eq, Generic)
+  deriving (Show, Eq)
 
 extractEnv :: Text -> IO (Result Vars)
 extractEnv script = quickjs $ do

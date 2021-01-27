@@ -6,7 +6,6 @@ module Web.Exhentai.Errors where
 
 import Control.Exception
 import Data.Text (Text)
-import GHC.Generics
 
 data ExhentaiError
   = JSONParseFailure String
@@ -15,5 +14,5 @@ data ExhentaiError
         url :: Text
       }
   | ExtractionFailure String
-  deriving (Show, Eq, Generic)
+  deriving (Show, Eq)
   deriving (Exception)

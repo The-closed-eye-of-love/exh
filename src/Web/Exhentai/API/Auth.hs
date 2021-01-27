@@ -49,5 +49,6 @@ auth Credential {..} = do
   modifyJar req3
   req4 <- formRequest "https://exhentai.org/mytags"
   modifyJar req4
+{-# INLINEABLE auth #-}
 
 makeFieldLabelsWith noPrefixFieldLabels ''Credential

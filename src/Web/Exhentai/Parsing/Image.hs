@@ -9,6 +9,8 @@ import Prelude hiding (id)
 
 imageSrc :: Traversal' Element Text
 imageSrc = id "i1" .// id "i3" .// a .// (img % attr "src")
+{-# INLINE imageSrc #-}
 
 nextPage :: Traversal' Element Text
 nextPage = id "i1" .// id "i3" .// (a % attr "href")
+{-# INLINE nextPage #-}

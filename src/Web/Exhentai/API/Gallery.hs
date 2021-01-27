@@ -167,6 +167,7 @@ fetchGalleryInfo g = do
   case parseGallery d of
     Left err -> throw $ XMLParseFailure err url
     Right info -> pure info
+{-# INLINEABLE fetchGalleryInfo #-}
 
 makeFieldLabelsWith noPrefixFieldLabels ''GalleryInfo
 makePrismLabels ''TagCategory

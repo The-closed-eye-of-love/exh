@@ -22,49 +22,63 @@ import Prelude hiding ((!!))
 
 body :: Traversal' Document Element
 body = (root % named "html") .// named "body"
+{-# INLINE body #-}
 
 div :: AffineTraversal' Element Element
 div = named "div"
+{-# INLINE div #-}
 
 h1 :: AffineTraversal' Element Element
 h1 = named "h1"
+{-# INLINE h1 #-}
 
 a :: AffineTraversal' Element Element
 a = named "a"
+{-# INLINE a #-}
 
 table :: AffineTraversal' Element Element
 table = named "table"
+{-# INLINE table #-}
 
 tr :: AffineTraversal' Element Element
 tr = named "tr"
+{-# INLINE tr #-}
 
 td :: AffineTraversal' Element Element
 td = named "td"
+{-# INLINE td #-}
 
 img :: AffineTraversal' Element Element
 img = named "img"
+{-# INLINE img #-}
 
 cl :: Text -> AffineTraversal' Element Element
 cl = attributeIs "class"
+{-# INLINE cl #-}
 
 id :: Text -> AffineTraversal' Element Element
 id = attributeIs "id"
+{-# INLINE id #-}
 
 viaShowRead :: (Show a, Read a) => Prism' Text a
 viaShowRead = prism' (pack . show) (readMaybe . unpack)
+{-# INLINE viaShowRead #-}
 
 scripts :: AffineTraversal' Element Element
 scripts = named "script" % attributeIs "type" "text/javascript"
+{-# INLINE scripts #-}
 
 infixl 8 ^?:
 
 (^?:) :: (Is (Join A_Traversal l) A_Fold, Is l (Join A_Traversal l), Is A_Traversal (Join A_Traversal l)) => Document -> Optic l is Element Element a a -> Maybe a
 doc ^?: fld = doc ^? pre (body .// fld)
+{-# INLINE (^?:) #-}
 
 infixl 8 ^..:
 
 (^..:) :: (Is (Join A_Traversal l) A_Fold, Is l (Join A_Traversal l), Is A_Traversal (Join A_Traversal l)) => Document -> Optic l is Element Element a a -> [a]
 doc ^..: fld = doc ^.. body .// fld
+{-# INLINE (^..:) #-}
 
 sinkAeson :: (FromJSON a, Monad m) => ConduitT ByteString o m (Either String a)
 sinkAeson = eitherDecode <$> sinkLazy
@@ -100,3 +114,4 @@ l !! i
     (_ : xs) <- l =
     xs !! (i - 1)
   | otherwise = Nothing
+{-# INLINE (!!) #-}

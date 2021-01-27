@@ -134,6 +134,7 @@ fetchMpv ::
   Gallery ->
   m Vars
 fetchMpv g = htmlRequest' (toMpvLink g) >>= parseMpv
+{-# INLINEABLE fetchMpv #-}
 
 parseMpv :: Effs '[Embed IO, Throw ExhentaiError] m => Document -> m Vars
 parseMpv doc = do
@@ -142,6 +143,7 @@ parseMpv doc = do
   case res of
     Error e -> throw $ ExtractionFailure e
     Success vars -> pure vars
+{-# INLINEABLE parseMpv #-}
 
 -- | Calls the API to dispatch a image request to a H@H server
 imageDispatch ::
@@ -155,6 +157,7 @@ imageDispatch dreq = do
   case r of
     Left e -> throw $ JSONParseFailure e
     Right res -> pure res
+{-# INLINEABLE imageDispatch #-}
 
 -- | Fetch an image with a 'DispatchRequest'
 fetchImage ::
@@ -162,6 +165,7 @@ fetchImage ::
   DispatchRequest ->
   ContT r m (Response (ConduitT i ByteString IO ()))
 fetchImage dreq = ContT $ \k -> bracket (fetchImage' dreq) respClose k
+{-# INLINEABLE fetchImage #-}
 
 -- | Like 'fetchImage', but the user is responsible of closing the response
 fetchImage' ::
@@ -177,6 +181,7 @@ fetchImage' dreq = do
     openWithJar req' `catch` \(_ :: HttpException) -> do
       req'' <- formRequest $ unpack $ "https://exhentai.org/" <> origImgPath res
       openWithJar req''
+{-# INLINEABLE fetchImage' #-}
 
 data MpvImage = MpvImage
   { name :: {-# UNPACK #-} Text,

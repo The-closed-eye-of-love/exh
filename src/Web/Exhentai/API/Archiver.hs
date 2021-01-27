@@ -22,6 +22,7 @@ import Prelude hiding (id)
 
 downloadLink :: Traversal' Element Text
 downloadLink = id "db" .// id "continue" .// attr "href"
+{-# INLINE downloadLink #-}
 
 originalParts :: Applicative m => [PartM m]
 originalParts =
@@ -55,6 +56,7 @@ streamWith parts url = ContT $ \k -> do
         (respOpen req')
         respClose
         (k . fmap bodyReaderSource)
+{-# INLINEABLE streamWith #-}
 
 -- | Download an origian archive from an archiver url as a stream
 streamOriginal ::
@@ -63,6 +65,7 @@ streamOriginal ::
   Text ->
   ContT r m (Response (ConduitT i ByteString IO ()))
 streamOriginal = streamWith originalParts
+{-# INLINEABLE streamOriginal #-}
 
 -- | Download an resampled archive from an archiver url as a stream
 streamResampled ::
@@ -71,3 +74,4 @@ streamResampled ::
   Text ->
   ContT r m (Response (ConduitT i ByteString IO ()))
 streamResampled = streamWith resampledParts
+{-# INLINEABLE streamResampled #-}

@@ -72,6 +72,7 @@ fetchSearchPage' ::
 fetchSearchPage' req = do
   d <- htmlRequest req
   pure $ parseSearchPage d
+{-# INLINEABLE fetchSearchPage' #-}
 
 -- | Fetch a search page using its url
 fetchSearchPage ::
@@ -79,6 +80,7 @@ fetchSearchPage ::
   Text ->
   m SearchResult
 fetchSearchPage = fetchSearchPage' <=< formRequest . unpack
+{-# INLINEABLE fetchSearchPage #-}
 
 -- | Search a search query
 search ::
@@ -96,6 +98,7 @@ search SearchQuery {..} = do
           )
           initReq
   fetchSearchPage' req
+{-# INLINEABLE search #-}
 
 -- | Iterate through all the Galleries asosciated with a search query, putting them into a stream
 searchRecur ::
@@ -108,6 +111,7 @@ searchRecur q = do
   case nextPage of
     Nothing -> pure ()
     Just url -> searchRecur' url
+{-# INLINEABLE searchRecur #-}
 
 searchRecur' ::
   Effs '[Http, Error HttpException, ConduitIO, Cookie, Bracket] m =>
@@ -120,6 +124,7 @@ searchRecur' url = do
   case nextPage of
     Nothing -> pure ()
     Just url' -> searchRecur' url'
+{-# INLINEABLE searchRecur' #-}
 
 -- | A resumable version of 'searchRecur' that reports it's progress.
 searchRecurResumable ::
@@ -132,6 +137,7 @@ searchRecurResumable q = do
   case nextPage of
     Nothing -> pure ()
     Just url -> searchRecurResumable' url
+{-# INLINEABLE searchRecurResumable #-}
 
 searchRecurResumable' ::
   Effs '[Http, Error HttpException, ConduitIO, Cookie, Bracket] m =>
@@ -145,6 +151,7 @@ searchRecurResumable' url = do
   case nextPage of
     Nothing -> pure ()
     Just url' -> searchRecurResumable' url'
+{-# INLINEABLE searchRecurResumable' #-}
 
 makeFieldLabelsWith noPrefixFieldLabels ''SearchQuery
 makeFieldLabelsWith noPrefixFieldLabels ''SearchResult

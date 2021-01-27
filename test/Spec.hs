@@ -1,21 +1,14 @@
 module Main where
 
-import Conduit
-import Control.Monad.Trans.Cont
-import Control.Retry
 import Data.Either
 import Data.Maybe
-import Network.HTTP.Client
+import Optics.Core
 import Test.Hspec
 import Text.HTML.DOM
-import Web.Exhentai.API.Auth
 import Web.Exhentai.API.Gallery
-import Web.Exhentai.API.MPV
 import qualified Web.Exhentai.Parsing.Gallery as G
 import Web.Exhentai.Parsing.Image
 import qualified Web.Exhentai.Parsing.Search as S
-import Web.Exhentai.Types
-import Web.Exhentai.Types.CookieT
 import Web.Exhentai.Utils
 import Prelude hiding (readFile)
 
@@ -99,4 +92,4 @@ sanityCheck = do
 
     describe "Search.galleryLink" $ do
       it "should return galleries" $ do
-        (search ^?: S.galleryPreviewElement . S.galleryLink) `shouldSatisfy` isJust
+        (search ^?: S.galleryPreviewElement % S.galleryLink) `shouldSatisfy` isJust

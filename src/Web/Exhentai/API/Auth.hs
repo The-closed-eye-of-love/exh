@@ -1,14 +1,21 @@
+{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE UndecidableInstances #-}
+
 module Web.Exhentai.API.Auth
   ( Credential (..),
     auth,
   )
 where
 
+import Control.Effect
+import Control.Effect.Bracket
+import Control.Effect.Error
+import Control.Effect.Exh
 import Data.ByteString (ByteString)
 import GHC.Generics
-import Network.HTTP.Client.Conduit
+import Network.HTTP.Client hiding (Cookie)
 import Network.HTTP.Client.MultipartFormData
-import Web.Exhentai.Types.CookieT
+import Optics.TH
 
 data Credential = Credential
   { username :: ByteString,
@@ -18,7 +25,7 @@ data Credential = Credential
 
 -- | Authenticates and loads user preferences.
 -- This should be called before any other functions are called
-auth :: MonadHttpState m => Credential -> m ()
+auth :: Effs '[Http, Error HttpException, Cookie, ConduitIO, Bracket] m => Credential -> m ()
 auth Credential {..} = do
   initReq <- formRequest "POST https://forums.e-hentai.org/index.php"
   let parts =
@@ -36,10 +43,12 @@ auth Credential {..} = do
           ]
           initReq
   finalReq <- attachFormData parts req
-  modifyingJar finalReq
+  modifyJar finalReq
   req2 <- formRequest "https://exhentai.org"
-  modifyingJar req2
+  modifyJar req2
   req3 <- formRequest "https://exhentai.org/uconfig.php"
-  modifyingJar req3
+  modifyJar req3
   req4 <- formRequest "https://exhentai.org/mytags"
-  modifyingJar req4
+  modifyJar req4
+
+makeFieldLabelsWith noPrefixFieldLabels ''Credential

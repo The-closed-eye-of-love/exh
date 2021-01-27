@@ -20,29 +20,25 @@ extra-doc-files:
 
 common common-attrs
   build-depends:
-    , aeson              >=1.4.7   && <1.6
-    , base               >=4.10    && <5
-    , bytestring         >=0.10.12 && <0.12
-    , conduit            ^>=1.3.4
-    , containers         ^>=0.6.2
-    , exceptions         ^>=0.10.4
-    , html-conduit       ^>=1.3.2
-    , http-client        >=0.6.4   && <0.8
-    , http-client-tls    ^>=0.3.5
-    , http-conduit       ^>=2.3.7
-    , lens               ^>=4.19
-    , megaparsec         ^>=9.0
-    , monad-control      ^>=1.0.2
-    , monad-time         ^>=0.3
-    , mtl                ^>=2.2
-    , quickjs-hs         ^>=0.1.2.4
-    , retry              ^>=0.8.1
-    , text               ^>=1.2.3
-    , time               >=1.9.3   && <1.12
-    , transformers       ^>=0.5.6
-    , transformers-base  ^>=0.4.5
-    , xml-conduit        >=1.8.0   && <1.10
-    , xml-lens           >=0.2     && <0.3
+    , aeson           >=1.4.7   && <1.6
+    , base            >=4.10    && <5
+    , bytestring      >=0.10.12 && <0.12
+    , conduit         ^>=1.3.4
+    , containers      ^>=0.6.2
+    , html-conduit    ^>=1.3.2
+    , http-client     >=0.6.4   && <0.8
+    , http-conduit    ^>=2.3.7
+    , in-other-words
+    , megaparsec      ^>=9.0
+    , optics-core
+    , optics-th
+    , pretty-simple
+    , quickjs-hs      ^>=0.1.2.4
+    , text            ^>=1.2.3
+    , time            >=1.9.3   && <1.12
+    , transformers
+    , xml-conduit     >=1.8.0   && <1.10
+    , xml-optics
 
   default-language:   Haskell2010
   default-extensions:
@@ -79,6 +75,7 @@ library
   import:          common-attrs
   build-depends:
   exposed-modules:
+    Control.Effect.Exh
     Web.Exhentai
     Web.Exhentai.API.Archiver
     Web.Exhentai.API.Auth
@@ -89,10 +86,8 @@ library
     Web.Exhentai.Errors
     Web.Exhentai.Parsing.Gallery
     Web.Exhentai.Parsing.Image
-    Web.Exhentai.Parsing.MPV
     Web.Exhentai.Parsing.Search
     Web.Exhentai.Types
-    Web.Exhentai.Types.CookieT
     Web.Exhentai.Utils
 
   other-modules:

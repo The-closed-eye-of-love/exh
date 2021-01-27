@@ -1,14 +1,15 @@
 {-# LANGUAGE DerivingStrategies #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE UndecidableInstances #-}
 
 module Web.Exhentai.Types where
 
 import Control.Applicative ((<|>))
-import Control.Lens
-import Data.Set (Set, fromList, toList)
 import Data.Text (Text, pack)
 import Data.Void
 import GHC.Generics
+import Optics.TH
 import Text.Megaparsec
   ( MonadParsec (notFollowedBy, takeWhile1P),
     Parsec,
@@ -24,122 +25,51 @@ import Text.Megaparsec.Char.Lexer
 
 type Parser = Parsec Void Text
 
-data GalleryCat
-  = Misc
-  | Doujinshi
-  | Manga
-  | ArtistCG
-  | GameCG
-  | ImageSet
-  | Cosplay
-  | AsianPorn
-  | NonH
-  | Western
-  | Private
-  deriving (Show, Eq, Ord, Enum, Bounded)
-
-allGalleryCats :: Set GalleryCat
-allGalleryCats = fromList [Misc .. Private]
-
-toBitField :: Set GalleryCat -> Int
-toBitField = sum . map ((2 ^) . fromEnum) . toList
-
-showCat :: GalleryCat -> Text
-showCat Doujinshi = "Doujinshi"
-showCat Manga = "Manga"
-showCat ArtistCG = "Artist CG"
-showCat GameCG = "Game CG"
-showCat NonH = "Non-H"
-showCat ImageSet = "Image Set"
-showCat Western = "Western"
-showCat Cosplay = "Cosplay"
-showCat Misc = "Misc"
-showCat Private = "Private"
-showCat AsianPorn = "Asian Porn"
-
-readCat :: Text -> Maybe GalleryCat
-readCat "Doujinshi" = Just Doujinshi
-readCat "Manga" = Just Manga
-readCat "Artist CG" = Just ArtistCG
-readCat "Game CG" = Just GameCG
-readCat "Non-H" = Just NonH
-readCat "Image Set" = Just ImageSet
-readCat "Western" = Just Western
-readCat "Cosplay" = Just Cosplay
-readCat "Misc" = Just Misc
-readCat "Private" = Just Private
-readCat "Asian Porn" = Just AsianPorn
-readCat _ = Nothing
-
-_GalleryCat :: Prism' Text GalleryCat
-_GalleryCat = prism' showCat readCat
-
-newtype PopUpLink = PopUpLink {unLink :: Text}
-  deriving newtype (Show, Eq)
-
-_PopUpLink :: Prism' Text PopUpLink
-_PopUpLink = prism' unLink parsePopUpLink
-
-parsePopUpLink :: Text -> Maybe PopUpLink
+parsePopUpLink :: Text -> Maybe Text
 parsePopUpLink = parseMaybe archiverLink
   where
-    archiverLink :: Parser PopUpLink
+    archiverLink :: Parser Text
     archiverLink = do
       _ <- chunk "return popUp('"
       url <- takeWhile1P Nothing (/= '\'')
       _ <- takeRest
-      pure $ PopUpLink url
+      pure url
 
-newtype AverageRating = AverageRating {unRating :: Float}
-  deriving newtype (Show, Eq)
-
-_AverageRating :: Prism' Text AverageRating
-_AverageRating = prism' (pack . show . unRating) parseAverageRating
-
-parseAverageRating :: Text -> Maybe AverageRating
+parseAverageRating :: Text -> Maybe Double
 parseAverageRating = parseMaybe averageRating
   where
-    averageRating :: Parser AverageRating
+    averageRating :: Parser Double
     averageRating =
       ( do
           _ <- chunk "Average: "
-          AverageRating <$> float
+          float
       )
-        <|> (chunk "Not Yet Rated" >> pure (AverageRating 0))
+        <|> (chunk "Not Yet Rated" >> pure 0)
 
-newtype GalleryLength = GalleryLength {unGalleryLength :: Int}
-  deriving newtype (Show, Eq)
-
-_GalleryLength :: Prism' Text GalleryLength
-_GalleryLength = prism' (pack . show . unGalleryLength) parseGalleryLength
-
-parseGalleryLength :: Text -> Maybe GalleryLength
+parseGalleryLength :: Text -> Maybe Int
 parseGalleryLength = parseMaybe galleryLength
   where
-    galleryLength :: Parser GalleryLength
+    galleryLength :: Parser Int
     galleryLength = do
       d <- decimal
       _ <- chunk " pages"
-      pure $ GalleryLength d
+      pure d
 
-newtype FavoriteCount = FavoriteCount {unFavoriteCount :: Int}
-  deriving newtype (Show, Eq)
-
-parseFavoriteCount :: Text -> Maybe FavoriteCount
+parseFavoriteCount :: Text -> Maybe Int
 parseFavoriteCount = parseMaybe favoriteCount
   where
     once = do
       _ <- chunk "Once"
-      pure $ FavoriteCount 1
+      pure 1
     never = do
       _ <- chunk "Never"
-      pure $ FavoriteCount 0
-    favoriteCount :: Parser FavoriteCount
+      pure 0
+    favoriteCount :: Parser Int
     favoriteCount =
       ( do
           d <- decimal
           _ <- chunk " times"
-          pure $ FavoriteCount d
+          pure d
       )
         <|> once
         <|> never
@@ -149,9 +79,6 @@ data Gallery = Gallery
     token :: {-# UNPACK #-} !Text
   }
   deriving (Show, Eq, Generic)
-
-_GalleryLink :: Prism' Text Gallery
-_GalleryLink = prism' toGalleryLink parseGalleryLink
 
 toGalleryLink :: Gallery -> Text
 toGalleryLink Gallery {..} = "https://exhentai.org/g/" <> pack (show galleryId) <> "/" <> token <> "/"
@@ -185,3 +112,5 @@ parsePreviewLink = parseMaybe previewLink
       pure url
     urlOpening :: Parser Text
     urlOpening = chunk "url("
+
+makeFieldLabelsWith noPrefixFieldLabels ''Gallery

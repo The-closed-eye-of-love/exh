@@ -1,4 +1,6 @@
 {-# LANGUAGE StrictData #-}
+{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE UndecidableInstances #-}
 
 module Web.Exhentai.API.Search
   ( SearchQuery (..),
@@ -13,30 +15,35 @@ module Web.Exhentai.API.Search
 where
 
 import Conduit
-import Control.Lens ((...))
-import Control.Lens.Fold
+import Control.Effect
+import Control.Effect.Bracket
+import Control.Effect.Error
+import Control.Effect.Exh
 import Control.Monad
+import Data.Maybe
 import Data.Set (Set, (\\))
 import Data.String
 import Data.Text (Text, unpack)
 import Data.Text.Encoding (encodeUtf8)
 import GHC.Generics
-import Network.HTTP.Client.Conduit
-import Text.XML
+import Network.HTTP.Client hiding (Cookie)
+import Optics.Core
+import Optics.TH
+import Text.XML.Optics
+import Web.Exhentai.API.Gallery
 import Web.Exhentai.Parsing.Search
 import Web.Exhentai.Types
-import Web.Exhentai.Types.CookieT
 import Web.Exhentai.Utils
 import Prelude hiding (last)
 
 data SearchQuery = SearchQuery
-  { categories :: Maybe (Set GalleryCat),
+  { categories :: Maybe (Set GalleryCategory),
     searchString :: {-# UNPACK #-} Text
   }
   deriving (Show, Eq, Generic)
 
-queryArgCat :: Set GalleryCat -> Int
-queryArgCat s = toBitField $ allGalleryCats \\ s
+queryArgCat :: Set GalleryCategory -> Int
+queryArgCat s = toBitField $ allGalleryCategorys \\ s
 
 data SearchResult = SearchResult
   { galleries :: [Gallery],
@@ -47,29 +54,38 @@ data SearchResult = SearchResult
 
 parseSearchPage :: Document -> SearchResult
 parseSearchPage d =
-  let galleries = d ^..: galleryPreviewElement . galleryLink
-      fld :: Fold Document Element
-      fld = body ... pagesElem
+  let galleries = mapMaybe parseGalleryLink $ d ^..: galleryPreviewElement % galleryLink
+      fld :: Traversal' Document Element
+      fld = body .// pagesElem
       prevPage = do
-        first <- firstOf fld d
-        first ^? linkOf
+        first <- headOf fld d
+        first ^? pre linkOf
       nextPage = do
         last <- lastOf fld d
-        last ^? linkOf
+        last ^? pre linkOf
    in SearchResult {..}
 
 -- | Fetch a search page using a 'Request'
-fetchSearchPage' :: MonadHttpState m => Request -> m SearchResult
+fetchSearchPage' ::
+  Effs '[Http, Error HttpException, ConduitIO, Cookie, Bracket] m =>
+  Request ->
+  m SearchResult
 fetchSearchPage' req = do
   d <- htmlRequest req
   pure $ parseSearchPage d
 
 -- | Fetch a search page using its url
-fetchSearchPage :: MonadHttpState m => Text -> m SearchResult
+fetchSearchPage ::
+  Effs '[Http, Error HttpException, ConduitIO, Cookie, Bracket] m =>
+  Text ->
+  m SearchResult
 fetchSearchPage = fetchSearchPage' <=< formRequest . unpack
 
 -- | Search a search query
-search :: MonadHttpState m => SearchQuery -> m SearchResult
+search ::
+  Effs '[Http, Error HttpException, ConduitIO, Cookie, Bracket] m =>
+  SearchQuery ->
+  m SearchResult
 search SearchQuery {..} = do
   let catQ = maybe [] (\c -> [("f_cats", Just $ fromString $ show $ queryArgCat c)]) categories
   initReq <- formRequest "https://exhentai.org"
@@ -83,7 +99,10 @@ search SearchQuery {..} = do
   fetchSearchPage' req
 
 -- | Iterate through all the Galleries asosciated with a search query, putting them into a stream
-searchRecur :: MonadHttpState m => SearchQuery -> ConduitT i Gallery m ()
+searchRecur ::
+  Effs '[Http, Error HttpException, ConduitIO, Cookie, Bracket] m =>
+  SearchQuery ->
+  ConduitT i Gallery m ()
 searchRecur q = do
   SearchResult {..} <- lift $ search q
   yieldMany galleries
@@ -92,7 +111,7 @@ searchRecur q = do
     Just url -> searchRecur' url
 
 searchRecur' ::
-  MonadHttpState m =>
+  Effs '[Http, Error HttpException, ConduitIO, Cookie, Bracket] m =>
   -- | url
   Text ->
   ConduitT i Gallery m ()
@@ -104,7 +123,10 @@ searchRecur' url = do
     Just url' -> searchRecur' url'
 
 -- | A resumable version of 'searchRecur' that reports it's progress.
-searchRecurResumable :: MonadHttpState m => SearchQuery -> ConduitT i (Either Text Gallery) m ()
+searchRecurResumable ::
+  Effs '[Http, Error HttpException, ConduitIO, Cookie, Bracket] m =>
+  SearchQuery ->
+  ConduitT i (Either Text Gallery) m ()
 searchRecurResumable q = do
   SearchResult {..} <- lift $ search q
   yieldMany $ map Right galleries
@@ -113,7 +135,7 @@ searchRecurResumable q = do
     Just url -> searchRecurResumable' url
 
 searchRecurResumable' ::
-  MonadHttpState m =>
+  Effs '[Http, Error HttpException, ConduitIO, Cookie, Bracket] m =>
   -- | url
   Text ->
   ConduitT i (Either Text Gallery) m ()
@@ -124,3 +146,6 @@ searchRecurResumable' url = do
   case nextPage of
     Nothing -> pure ()
     Just url' -> searchRecurResumable' url'
+
+makeFieldLabelsWith noPrefixFieldLabels ''SearchQuery
+makeFieldLabelsWith noPrefixFieldLabels ''SearchResult

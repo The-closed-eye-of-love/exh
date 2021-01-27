@@ -5,64 +5,65 @@ module Web.Exhentai.API.Archiver
 where
 
 import Conduit
-import Control.Lens (Traversal')
-import Control.Monad.Catch
-import Control.Monad.Cont
+import Control.Effect
+import Control.Effect.Bracket
+import Control.Effect.Error
+import Control.Effect.Exh
+import Control.Monad.Trans.Cont
 import Data.ByteString (ByteString)
 import Data.Text (Text, unpack)
-import Network.HTTP.Client.Conduit
+import Network.HTTP.Client hiding (Cookie)
 import Network.HTTP.Client.MultipartFormData
-import Text.XML.Lens
+import Optics.Core (Traversal')
+import Text.XML.Optics
 import Web.Exhentai.Errors
-import Web.Exhentai.Types.CookieT
 import Web.Exhentai.Utils
 import Prelude hiding (id)
 
 downloadLink :: Traversal' Element Text
-downloadLink = id "db" ... id "continue" ... attr "href"
+downloadLink = id "db" .// id "continue" .// attr "href"
 
-originalParts :: [Part]
+originalParts :: Applicative m => [PartM m]
 originalParts =
   [ partBS "dltype" "org",
     partBS "dlcheck" "Download Original Archive"
   ]
 {-# INLINE originalParts #-}
 
-resampledParts :: [Part]
+resampledParts :: Applicative m => [PartM m]
 resampledParts =
   [ partBS "dltype" "res",
     partBS "dlcheck" "Download Resample Archive"
   ]
 {-# INLINE resampledParts #-}
 
-streamWith :: (MonadHttpState m, MonadIO n) => [Part] -> Text -> ContT r m (Response (ConduitT i ByteString n ()))
+streamWith :: Effs '[Exh, Throw ExhentaiError] m => [PartM m] -> Text -> ContT r m (Response (ConduitT i ByteString IO ()))
 streamWith parts url = ContT $ \k -> do
   initReq <- formRequest $ unpack url
-  req <- formDataBody parts initReq
+  req <- attachFormData parts initReq
   d <- htmlRequest req
   case d ^?: downloadLink of
-    Nothing -> throwM $ XMLParseFailure "download link" url
+    Nothing -> throw $ XMLParseFailure "download link" url
     Just l -> do
       newReq <- formRequest $ unpack l
       let req' = setQueryString [("start", Just "1")] newReq
-      retryWhenTimeout $
-        bracket
-          (respOpen req')
-          respClose
-          k
+      bracket
+        (respOpen req')
+        respClose
+        (k . fmap bodyReaderSource)
 
 -- | Download an origian archive from an archiver url as a stream
 streamOriginal ::
-  (MonadHttpState m, MonadIO n) =>
+  Effs '[Exh, Throw ExhentaiError] m =>
   -- | Archiver url, usually the 'archiverLink` field
   Text ->
-  ContT r m (Response (ConduitT i ByteString n ()))
+  ContT r m (Response (ConduitT i ByteString IO ()))
 streamOriginal = streamWith originalParts
 
 -- | Download an resampled archive from an archiver url as a stream
 streamResampled ::
-  (MonadHttpState m, MonadIO n) =>
+  Effs '[Exh, Throw ExhentaiError] m =>
   -- | Archiver url, usually the 'archiverLink` field
   Text ->
-  ContT r m (Response (ConduitT i ByteString n ()))
+  ContT r m (Response (ConduitT i ByteString IO ()))
 streamResampled = streamWith resampledParts

@@ -151,8 +151,6 @@ conduitIOToIO = interpretViaHandler
 --------------------------------------------------
 --
 
-type Exh = Bundle '[Http, Error HttpException, Cookie, Bracket, ConduitIO]
-
 attachFormData :: Eff Http m => [PartM m] -> Request -> m Request
 attachFormData parts req = do
   boundary <- genBoundary

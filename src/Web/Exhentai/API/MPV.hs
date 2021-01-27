@@ -30,7 +30,7 @@ import Data.Aeson
 import Data.ByteString (ByteString)
 import Data.Text (Text, unpack)
 import Data.Text.Encoding
-import Network.HTTP.Client.Conduit
+import Network.HTTP.Client hiding (Cookie)
 import Optics.Core
 import Optics.TH
 import Quickjs
@@ -129,7 +129,10 @@ toRequests Vars {..} = zipWith formReq [1 ..] imageList
         }
 
 -- | Fetch the 'Vars' from a Gallery's mpv page
-fetchMpv :: Effs '[Exh, Throw ExhentaiError, Embed IO] m => Gallery -> m Vars
+fetchMpv ::
+  Effs '[Http, Error HttpException, Cookie, ConduitIO, Bracket, Throw ExhentaiError, Embed IO] m =>
+  Gallery ->
+  m Vars
 fetchMpv g = htmlRequest' (toMpvLink g) >>= parseMpv
 
 parseMpv :: Effs '[Embed IO, Throw ExhentaiError] m => Document -> m Vars
@@ -141,7 +144,10 @@ parseMpv doc = do
     Success vars -> pure vars
 
 -- | Calls the API to dispatch a image request to a H@H server
-imageDispatch :: Effs '[Exh, Throw ExhentaiError] m => DispatchRequest -> m DispatchResult
+imageDispatch ::
+  Effs '[Http, Error HttpException, Cookie, ConduitIO, Bracket, Throw ExhentaiError] m =>
+  DispatchRequest ->
+  m DispatchResult
 imageDispatch dreq = do
   initReq <- formRequest "https://exhentai.org/api.php"
   let req = initReq {method = "POST", requestBody = RequestBodyLBS $ encode dreq}
@@ -151,11 +157,17 @@ imageDispatch dreq = do
     Right res -> pure res
 
 -- | Fetch an image with a 'DispatchRequest'
-fetchImage :: Effs '[Exh, Throw ExhentaiError] m => DispatchRequest -> ContT r m (Response (ConduitT i ByteString IO ()))
+fetchImage ::
+  Effs '[Http, Error HttpException, Cookie, ConduitIO, Bracket, Throw ExhentaiError] m =>
+  DispatchRequest ->
+  ContT r m (Response (ConduitT i ByteString IO ()))
 fetchImage dreq = ContT $ \k -> bracket (fetchImage' dreq) respClose k
 
 -- | Like 'fetchImage', but the user is responsible of closing the response
-fetchImage' :: Effs '[Exh, Throw ExhentaiError] m => DispatchRequest -> m (Response (ConduitT i ByteString IO ()))
+fetchImage' ::
+  Effs '[Http, Error HttpException, Cookie, ConduitIO, Bracket, Throw ExhentaiError] m =>
+  DispatchRequest ->
+  m (Response (ConduitT i ByteString IO ()))
 fetchImage' dreq = do
   res <- imageDispatch dreq
   req <- formRequest $ unpack $ imgLink res

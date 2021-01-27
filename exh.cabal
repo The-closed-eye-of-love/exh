@@ -27,12 +27,10 @@ common common-attrs
     , containers      ^>=0.6.2
     , html-conduit    ^>=1.3.2
     , http-client     >=0.6.4   && <0.8
-    , http-conduit    ^>=2.3.7
     , in-other-words
     , megaparsec      ^>=9.0
     , optics-core
     , optics-th
-    , pretty-simple
     , quickjs-hs      ^>=0.1.2.4
     , text            ^>=1.2.3
     , time            >=1.9.3   && <1.12

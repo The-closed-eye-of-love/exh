@@ -37,7 +37,11 @@ resampledParts =
   ]
 {-# INLINE resampledParts #-}
 
-streamWith :: Effs '[Exh, Throw ExhentaiError] m => [PartM m] -> Text -> ContT r m (Response (ConduitT i ByteString IO ()))
+streamWith ::
+  Effs '[Http, Error HttpException, Cookie, ConduitIO, Bracket, Throw ExhentaiError] m =>
+  [PartM m] ->
+  Text ->
+  ContT r m (Response (ConduitT i ByteString IO ()))
 streamWith parts url = ContT $ \k -> do
   initReq <- formRequest $ unpack url
   req <- attachFormData parts initReq
@@ -54,7 +58,7 @@ streamWith parts url = ContT $ \k -> do
 
 -- | Download an origian archive from an archiver url as a stream
 streamOriginal ::
-  Effs '[Exh, Throw ExhentaiError] m =>
+  Effs '[Http, Error HttpException, Cookie, ConduitIO, Bracket, Throw ExhentaiError] m =>
   -- | Archiver url, usually the 'archiverLink` field
   Text ->
   ContT r m (Response (ConduitT i ByteString IO ()))
@@ -62,7 +66,7 @@ streamOriginal = streamWith originalParts
 
 -- | Download an resampled archive from an archiver url as a stream
 streamResampled ::
-  Effs '[Exh, Throw ExhentaiError] m =>
+  Effs '[Http, Error HttpException, Cookie, ConduitIO, Bracket, Throw ExhentaiError] m =>
   -- | Archiver url, usually the 'archiverLink` field
   Text ->
   ContT r m (Response (ConduitT i ByteString IO ()))

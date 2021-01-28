@@ -73,7 +73,6 @@ library
   import:          common-attrs
   build-depends:
   exposed-modules:
-    Control.Effect.Exh
     Web.Exhentai
     Web.Exhentai.API.Archiver
     Web.Exhentai.API.Auth
@@ -81,13 +80,16 @@ library
     Web.Exhentai.API.MPV
     Web.Exhentai.API.Search
     Web.Exhentai.API.Watched
-    Web.Exhentai.Errors
     Web.Exhentai.Parsing.Gallery
     Web.Exhentai.Parsing.Image
     Web.Exhentai.Parsing.Search
     Web.Exhentai.Utils
 
-  other-modules:   Language.JavaScript.Extraction
+  other-modules:
+    Control.Effect.Exh
+    Language.JavaScript.Extraction
+    Web.Exhentai.Errors
+
   hs-source-dirs:  src
 
 test-suite exh-test

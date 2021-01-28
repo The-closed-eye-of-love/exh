@@ -31,7 +31,7 @@ sanityCheck = do
 
     describe "Image.nextPage" $ do
       it "should return the link to the next page" $ do
-        (image ^?: nextPage) `shouldSatisfy` isJust
+        (image ^?: nextImage) `shouldSatisfy` isJust
 
     describe "Gallery.enTitle" $ do
       it "should return the title of the gallery" $ do

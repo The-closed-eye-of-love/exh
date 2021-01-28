@@ -13,6 +13,6 @@ data ExhentaiError
       { reason :: Text,
         url :: Text
       }
-  | ExtractionFailure String
+  | ExtractionFailure
   deriving (Show, Eq)
   deriving (Exception)

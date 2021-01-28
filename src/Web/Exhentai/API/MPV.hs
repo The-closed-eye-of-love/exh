@@ -16,6 +16,7 @@ module Web.Exhentai.API.MPV
     toRequests,
     imageDispatch,
     fetchImage,
+    allScripts,
   )
 where
 
@@ -29,11 +30,11 @@ import Control.Monad.Trans.Cont
 import Data.Aeson
 import Data.ByteString (ByteString)
 import Data.Text (Text, unpack)
-import Data.Text.Encoding
+import Language.JavaScript.Extraction
+import Language.JavaScript.Parser
 import Network.HTTP.Client hiding (Cookie)
 import Optics.Core
 import Optics.TH
-import Quickjs
 import Text.XML
 import Text.XML.Optics
 import Web.Exhentai.Errors
@@ -130,19 +131,22 @@ toRequests Vars {..} = zipWith formReq [1 ..] imageList
 
 -- | Fetch the 'Vars' from a Gallery's mpv page
 fetchMpv ::
-  Effs '[Http, Error HttpException, Cookie, ConduitIO, Bracket, Throw ExhentaiError, Embed IO] m =>
+  Effs '[Http, Error HttpException, Cookie, ConduitIO, Bracket, Throw ExhentaiError] m =>
   Gallery ->
   m Vars
 fetchMpv g = htmlRequest' (toMpvLink g) >>= parseMpv
 {-# INLINEABLE fetchMpv #-}
 
-parseMpv :: Effs '[Embed IO, Throw ExhentaiError] m => Document -> m Vars
+parseMpv :: Effs '[Throw ExhentaiError] m => Document -> m Vars
 parseMpv doc = do
   let script = foldOf allScripts doc
-  res <- embed $ extractEnv script
-  case res of
-    Error e -> throw $ ExtractionFailure e
-    Success vars -> pure vars
+      mast = parse (unpack script) ""
+  case mast of
+    Left _ -> error "impossible, javascript parse failed"
+    Right ast ->
+      case as ast of
+        Nothing -> throw ExtractionFailure
+        Just vars -> pure vars
 {-# INLINEABLE parseMpv #-}
 
 -- | Calls the API to dispatch a image request to a H@H server
@@ -183,49 +187,10 @@ fetchImage' dreq = do
       openWithJar req''
 {-# INLINEABLE fetchImage' #-}
 
-data MpvImage = MpvImage
-  { name :: {-# UNPACK #-} Text,
-    key :: {-# UNPACK #-} Text,
-    thumbnail :: {-# UNPACK #-} Text
-  }
-  deriving (Show, Eq)
-
-instance FromJSON MpvImage where
-  parseJSON = withObject "mpv image" $ \o ->
-    MpvImage
-      <$> o .: "n"
-      <*> o .: "k"
-      <*> o .: "t"
-
--- | All the variables defined in the scripts that came with the MPV
-data Vars = Vars
-  { gid :: {-# UNPACK #-} Int,
-    mpvkey :: {-# UNPACK #-} Text,
-    pageCount :: {-# UNPACK #-} Int,
-    imageList :: [MpvImage]
-  }
-  deriving (Show, Eq)
-
-extractEnv :: Text -> IO (Result Vars)
-extractEnv script = quickjs $ do
-  eval_ $ encodeUtf8 script
-  gid' <- eval "gid"
-  mpvkey' <- eval "mpvkey"
-  imageList' <- eval "imagelist"
-  pageCount' <- eval "pagecount"
-  pure $ do
-    gid <- fromJSON gid'
-    mpvkey <- fromJSON mpvkey'
-    imageList <- fromJSON imageList'
-    pageCount <- fromJSON pageCount'
-    pure Vars {..}
-
 allScripts :: Traversal' Document Text
 allScripts = body .// (scripts % lower %> _Content)
 
 makeFieldLabelsWith noPrefixFieldLabels ''DispatchResult
 makeFieldLabelsWith noPrefixFieldLabels ''DispatchRequest
-makeFieldLabelsWith noPrefixFieldLabels ''Vars
-makeFieldLabelsWith noPrefixFieldLabels ''MpvImage
 makePrismLabels ''Dim
 makePrismLabels ''Server

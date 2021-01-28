@@ -20,22 +20,22 @@ extra-doc-files:
 
 common common-attrs
   build-depends:
-    , aeson           >=1.4.7   && <1.6
-    , base            >=4.10    && <5
-    , bytestring      >=0.10.12 && <0.12
-    , conduit         ^>=1.3.4
-    , containers      ^>=0.6.2
-    , html-conduit    ^>=1.3.2
-    , http-client     >=0.6.4   && <0.8
+    , aeson                >=1.4.7   && <1.6
+    , base                 >=4.10    && <5
+    , bytestring           >=0.10.12 && <0.12
+    , conduit              ^>=1.3.4
+    , containers           ^>=0.6.2
+    , html-conduit         ^>=1.3.2
+    , http-client          >=0.6.4   && <0.8
     , in-other-words
-    , megaparsec      ^>=9.0
+    , language-javascript
+    , megaparsec           ^>=9.0
     , optics-core
     , optics-th
-    , quickjs-hs      ^>=0.1.2.4
-    , text            ^>=1.2.3
-    , time            >=1.9.3   && <1.12
+    , text                 ^>=1.2.3
+    , time                 >=1.9.3   && <1.12
     , transformers
-    , xml-conduit     >=1.8.0   && <1.10
+    , xml-conduit          >=1.8.0   && <1.10
     , xml-optics
 
   default-language:   Haskell2010
@@ -88,7 +88,7 @@ library
     Web.Exhentai.Types
     Web.Exhentai.Utils
 
-  other-modules:
+  other-modules:   Language.JavaScript.Extraction
   hs-source-dirs:  src
 
 test-suite exh-test

@@ -2,6 +2,7 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE UndecidableInstances #-}
 
+-- | Gallery API.
 module Web.Exhentai.API.Gallery
   ( GalleryInfo (..),
     Visibility (..),
@@ -9,6 +10,8 @@ module Web.Exhentai.API.Gallery
     TagCategory (..),
     allGalleryCats,
     fetchGalleryInfo,
+
+    -- ** Internal API
     parseGallery,
   )
 where

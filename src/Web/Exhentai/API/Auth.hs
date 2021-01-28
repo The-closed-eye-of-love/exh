@@ -1,6 +1,7 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE UndecidableInstances #-}
 
+-- | Authentication API.
 module Web.Exhentai.API.Auth
   ( Credential (..),
     auth,

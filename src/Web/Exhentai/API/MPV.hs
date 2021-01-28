@@ -5,18 +5,13 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE UndecidableInstances #-}
 
+-- | MPV (multi-page viewer) API.
 module Web.Exhentai.API.MPV
   ( DispatchRequest (..),
-    DispatchResult (..),
-    Vars (..),
     Server (..),
     Dim (..),
-    MpvImage (..),
-    fetchMpv,
-    toRequests,
-    imageDispatch,
+    buildRequest,
     fetchImage,
-    allScripts,
   )
 where
 
@@ -26,6 +21,7 @@ import Control.Effect
 import Control.Effect.Bracket
 import Control.Effect.Error
 import Control.Effect.Exh
+import Control.Monad
 import Control.Monad.Trans.Cont
 import Data.Aeson
 import Data.ByteString (ByteString)
@@ -148,6 +144,14 @@ parseMpv doc = do
         Nothing -> throw ExtractionFailure
         Just vars -> pure vars
 {-# INLINEABLE parseMpv #-}
+
+-- | Build dispatch requests for a gallery
+buildRequest ::
+  Effs '[Http, Error HttpException, Cookie, ConduitIO, Bracket, Throw ExhentaiError] m =>
+  Gallery ->
+  m [DispatchRequest]
+buildRequest g = toRequests <$> fetchMpv g
+{-# INLINEABLE buildRequest #-}
 
 -- | Calls the API to dispatch a image request to a H@H server
 imageDispatch ::

@@ -1,5 +1,6 @@
 {-# LANGUAGE RankNTypes #-}
 
+-- | Internal module
 module Web.Exhentai.Utils where
 
 import Conduit

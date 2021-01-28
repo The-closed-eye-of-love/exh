@@ -8,9 +8,7 @@ module Web.Exhentai.API.Search
     search,
     searchRecur,
     searchRecurResumable,
-    searchRecurResumable',
     fetchSearchPage,
-    fetchSearchPage',
   )
 where
 

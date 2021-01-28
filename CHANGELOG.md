@@ -8,3 +8,7 @@ Initial release
 
 - Bug fixes
 - Add a resumable variant of the search function
+
+## 1.0.0
+
+- Rewrite using in-other-words

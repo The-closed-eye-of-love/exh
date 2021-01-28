@@ -1,6 +1,6 @@
 cabal-version:   3.0
 name:            exh
-version:         0.2.0
+version:         1.0.0
 synopsis:        A library for crawling exhentai
 description:
   A library for crawling exhentai, with the support of streaming
@@ -11,7 +11,7 @@ license-file:    LICENSE
 author:          Poscat
 maintainer:      Poscat <poscat@mail.poscat.moe>
 copyright:       Copyright (c) Poscat 2021
-stability:       alpha
+stability:       experimental
 homepage:        https://github.com/poscat0x04/exh
 bug-reports:     https://github.com/poscat0x04/exh/issues
 extra-doc-files:
@@ -98,6 +98,7 @@ test-suite exh-test
   build-depends:
     , exh
     , hspec
+    , http-client-tls
 
   hs-source-dirs: test
   main-is:        Spec.hs

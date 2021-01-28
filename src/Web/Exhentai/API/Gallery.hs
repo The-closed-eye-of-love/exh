@@ -7,8 +7,7 @@ module Web.Exhentai.API.Gallery
     Visibility (..),
     GalleryCategory (..),
     TagCategory (..),
-    toBitField,
-    allGalleryCategorys,
+    allGalleryCats,
     fetchGalleryInfo,
     parseGallery,
   )
@@ -20,7 +19,7 @@ import Control.Effect.Error
 import Control.Effect.Exh
 import Control.Monad
 import Data.Maybe
-import Data.Set (Set, fromList, toList)
+import Data.Set (Set, fromList)
 import Data.Text (Text, strip)
 import Data.Time
 import Network.HTTP.Client hiding (Cookie)
@@ -73,11 +72,8 @@ data GalleryCategory
   | Private
   deriving (Show, Eq, Ord, Enum, Bounded)
 
-allGalleryCategorys :: Set GalleryCategory
-allGalleryCategorys = fromList [Misc .. Private]
-
-toBitField :: Set GalleryCategory -> Int
-toBitField = sum . map ((2 ^) . fromEnum) . toList
+allGalleryCats :: Set GalleryCategory
+allGalleryCats = fromList [Misc .. Private]
 
 readCat :: Text -> Maybe GalleryCategory
 readCat "Doujinshi" = Just Doujinshi

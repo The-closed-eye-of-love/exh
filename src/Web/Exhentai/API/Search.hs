@@ -21,7 +21,7 @@ import Control.Effect.Error
 import Control.Effect.Exh
 import Control.Monad
 import Data.Maybe
-import Data.Set (Set, (\\))
+import Data.Set (Set, toList, (\\))
 import Data.String
 import Data.Text (Text, unpack)
 import Data.Text.Encoding (encodeUtf8)
@@ -35,6 +35,9 @@ import Web.Exhentai.Types
 import Web.Exhentai.Utils
 import Prelude hiding (last)
 
+toBitField :: Set GalleryCategory -> Int
+toBitField = sum . map ((2 ^) . fromEnum) . toList
+
 data SearchQuery = SearchQuery
   { categories :: Maybe (Set GalleryCategory),
     searchString :: {-# UNPACK #-} Text
@@ -42,7 +45,7 @@ data SearchQuery = SearchQuery
   deriving (Show, Eq)
 
 queryArgCat :: Set GalleryCategory -> Int
-queryArgCat s = toBitField $ allGalleryCategorys \\ s
+queryArgCat s = toBitField $ allGalleryCats \\ s
 
 data SearchResult = SearchResult
   { galleries :: [Gallery],

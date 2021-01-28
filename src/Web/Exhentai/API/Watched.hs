@@ -11,8 +11,8 @@ import Control.Effect.Exh
 import Data.Maybe
 import Network.HTTP.Client hiding (Cookie)
 import Optics.Core
+import Web.Exhentai.API.Gallery
 import Web.Exhentai.Parsing.Search
-import Web.Exhentai.Types
 import Web.Exhentai.Utils
 
 -- | Fetch the list of watched galleries

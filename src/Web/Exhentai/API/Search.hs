@@ -29,7 +29,6 @@ import Optics.TH
 import Text.XML.Optics
 import Web.Exhentai.API.Gallery
 import Web.Exhentai.Parsing.Search
-import Web.Exhentai.Types
 import Web.Exhentai.Utils
 import Prelude hiding (last)
 

@@ -25,7 +25,7 @@ import Control.Monad
 import Control.Monad.Trans.Cont
 import Data.Aeson
 import Data.ByteString (ByteString)
-import Data.Text (Text, unpack)
+import Data.Text (Text, pack, unpack)
 import Language.JavaScript.Extraction
 import Language.JavaScript.Parser
 import Network.HTTP.Client hiding (Cookie)
@@ -33,8 +33,8 @@ import Optics.Core
 import Optics.TH
 import Text.XML
 import Text.XML.Optics
+import Web.Exhentai.API.Gallery
 import Web.Exhentai.Errors
-import Web.Exhentai.Types
 import Web.Exhentai.Utils
 import Prelude hiding ((!!))
 
@@ -124,6 +124,9 @@ toRequests Vars {..} = zipWith formReq [1 ..] imageList
           exclude = Nothing,
           mpvKey = mpvkey
         }
+
+toMpvLink :: Gallery -> Text
+toMpvLink Gallery {..} = "https://exhentai.org/mpv/" <> pack (show galleryId) <> "/" <> token <> "/"
 
 -- | Fetch the 'Vars' from a Gallery's mpv page
 fetchMpv ::

@@ -4,7 +4,8 @@
 
 -- | Gallery API.
 module Web.Exhentai.API.Gallery
-  ( GalleryInfo (..),
+  ( Gallery (..),
+    GalleryInfo (..),
     Visibility (..),
     GalleryCategory (..),
     TagCategory (..),
@@ -12,6 +13,7 @@ module Web.Exhentai.API.Gallery
     fetchGalleryInfo,
 
     -- ** Internal API
+    parseGalleryLink,
     parseGallery,
   )
 where
@@ -23,19 +25,42 @@ import Control.Effect.Exh
 import Control.Monad
 import Data.Maybe
 import Data.Set (Set, fromList)
-import Data.Text (Text, strip)
+import Data.Text (Text, pack, strip)
 import Data.Time
+import Data.Void
 import Network.HTTP.Client hiding (Cookie)
 import Optics.Core
 import Optics.TH
+import Text.Megaparsec hiding (token)
+import Text.Megaparsec.Char.Lexer
 import Text.XML
 import Text.XML.Optics
 import Web.Exhentai.Errors
 import qualified Web.Exhentai.Parsing.Gallery as G
-import Web.Exhentai.Types
 import Web.Exhentai.Utils
 import Prelude hiding (length)
 import qualified Prelude as P
+
+data Gallery = Gallery
+  { galleryId :: {-# UNPACK #-} !Int,
+    token :: {-# UNPACK #-} !Text
+  }
+  deriving (Show, Eq)
+
+toGalleryLink :: Gallery -> Text
+toGalleryLink Gallery {..} = "https://exhentai.org/g/" <> pack (show galleryId) <> "/" <> token <> "/"
+
+parseGalleryLink :: Text -> Maybe Gallery
+parseGalleryLink = parseMaybe galleryLink
+  where
+    galleryLink :: Parser Gallery
+    galleryLink = do
+      _ <- chunk "https://exhentai.org/g/"
+      galleryId <- decimal
+      _ <- single '/'
+      token <- takeWhile1P Nothing (/= '/')
+      _ <- optional $ single '/'
+      pure Gallery {..}
 
 data TagCategory
   = Language
@@ -167,6 +192,75 @@ fetchGalleryInfo g = do
     Left err -> throw $ XMLParseFailure err url
     Right info -> pure info
 {-# INLINEABLE fetchGalleryInfo #-}
+
+--------------------------------------------------
+--
+
+type Parser = Parsec Void Text
+
+parsePopUpLink :: Text -> Maybe Text
+parsePopUpLink = parseMaybe archiverLink
+  where
+    archiverLink :: Parser Text
+    archiverLink = do
+      _ <- chunk "return popUp('"
+      url <- takeWhile1P Nothing (/= '\'')
+      _ <- takeRest
+      pure url
+
+parseAverageRating :: Text -> Maybe Double
+parseAverageRating = parseMaybe averageRating
+  where
+    averageRating :: Parser Double
+    averageRating =
+      ( do
+          _ <- chunk "Average: "
+          float
+      )
+        <|> (chunk "Not Yet Rated" >> pure 0)
+
+parseGalleryLength :: Text -> Maybe Int
+parseGalleryLength = parseMaybe galleryLength
+  where
+    galleryLength :: Parser Int
+    galleryLength = do
+      d <- decimal
+      _ <- chunk " pages"
+      pure d
+
+parseFavoriteCount :: Text -> Maybe Int
+parseFavoriteCount = parseMaybe favoriteCount
+  where
+    once = do
+      _ <- chunk "Once"
+      pure 1
+    never = do
+      _ <- chunk "Never"
+      pure 0
+    favoriteCount :: Parser Int
+    favoriteCount =
+      ( do
+          d <- decimal
+          _ <- chunk " times"
+          pure d
+      )
+        <|> once
+        <|> never
+
+parsePreviewLink :: Text -> Maybe Text
+parsePreviewLink = parseMaybe previewLink
+  where
+    previewLink :: Parser Text
+    previewLink = do
+      _ <- many $ do
+        notFollowedBy urlOpening
+        anySingle
+      _ <- urlOpening
+      url <- takeWhile1P Nothing (/= ')')
+      _ <- takeRest
+      pure url
+    urlOpening :: Parser Text
+    urlOpening = chunk "url("
 
 makeFieldLabelsWith noPrefixFieldLabels ''GalleryInfo
 makePrismLabels ''TagCategory

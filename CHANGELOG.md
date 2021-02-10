@@ -12,3 +12,8 @@ Initial release
 ## 1.0.0
 
 - Rewrite using in-other-words
+
+## 1.0.1
+
+- Performance optimizations
+- Add stricter version bounds

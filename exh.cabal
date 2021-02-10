@@ -12,8 +12,8 @@ author:          Poscat
 maintainer:      Poscat <poscat@mail.poscat.moe>
 copyright:       Copyright (c) Poscat 2021
 stability:       experimental
-homepage:        https://github.com/poscat0x04/exh
-bug-reports:     https://github.com/poscat0x04/exh/issues
+homepage:        https://github.com/The-closed-eye-of-love/exh
+bug-reports:     https://github.com/The-closed-eye-of-love/exh/issues
 extra-doc-files:
   CHANGELOG.md
   README.md
@@ -105,4 +105,4 @@ test-suite exh-test
 
 source-repository head
   type:     git
-  location: https://github.com/poscat0x04/exh
+  location: https://github.com/The-closed-eye-of-love/exh

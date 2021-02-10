@@ -83,28 +83,34 @@ doc ^..: fld = doc ^.. body .// fld
 
 sinkAeson :: (FromJSON a, Monad m) => ConduitT ByteString o m (Either String a)
 sinkAeson = eitherDecode <$> sinkLazy
+{-# INLINE sinkAeson #-}
 
 jsonRequest :: (FromJSON a, Effs '[Http, Error HttpException, ConduitIO, Cookie, Bracket] m) => Request -> m (Either String a)
 jsonRequest req = evalContT $ do
   resp <- withSource req
   lift $ runConduitIO $ responseBody resp .| sinkAeson
+{-# INLINEABLE jsonRequest #-}
 
 htmlRequest :: Effs '[Http, Error HttpException, ConduitIO, Cookie, Bracket] m => Request -> m Document
 htmlRequest req = evalContT $ do
   resp <- withSource req
   lift $ runConduitIO $ responseBody resp .| sinkDoc
+{-# INLINEABLE htmlRequest #-}
 
 htmlRequest' :: Effs '[Http, Error HttpException, ConduitIO, Cookie, Bracket] m => Text -> m Document
 htmlRequest' url = do
   req <- formRequest $ unpack url
   htmlRequest req
+{-# INLINEABLE htmlRequest' #-}
 
 parseUploadTime :: Text -> Maybe UTCTime
 parseUploadTime s = parseTimeM True defaultTimeLocale "%F %R" $ unpack s
+{-# INLINE parseUploadTime #-}
 
 annotate :: ann -> Maybe a -> Either ann a
 annotate _ (Just a') = Right a'
 annotate ann Nothing = Left ann
+{-# INLINE annotate #-}
 
 (!!) :: [a] -> Int -> Maybe a
 l !! i

@@ -1,19 +1,20 @@
-cabal-version:   3.0
-name:            exh
-version:         1.0.1
-synopsis:        A library for crawling exhentai
+cabal-version:      3.0
+name:               exh
+version:            1.0.2
+synopsis:           A library for crawling exhentai
 description:
   A library for crawling exhentai, with the support of streaming
 
-category:        Web
-license:         BSD-3-Clause
-license-file:    LICENSE
-author:          Poscat
-maintainer:      Poscat <poscat@mail.poscat.moe>
-copyright:       Copyright (c) Poscat 2021
-stability:       experimental
-homepage:        https://github.com/The-closed-eye-of-love/exh
-bug-reports:     https://github.com/The-closed-eye-of-love/exh/issues
+category:           Web
+license:            BSD-3-Clause
+license-file:       LICENSE
+author:             Poscat
+maintainer:         Poscat <poscat@mail.poscat.moe>
+copyright:          Copyright (c) Poscat 2021
+stability:          experimental
+homepage:           https://github.com/The-closed-eye-of-love/exh
+bug-reports:        https://github.com/The-closed-eye-of-love/exh/issues
+extra-source-files: test/*.html
 extra-doc-files:
   CHANGELOG.md
   README.md

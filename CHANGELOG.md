@@ -17,3 +17,7 @@ Initial release
 
 - Performance optimizations
 - Add stricter version bounds
+
+## 1.0.2
+
+- Fix tests
